@@ -10,9 +10,8 @@ import {
 } from "react-native";
 
 interface IFormProps {
-  signup: (email: string, password: string) => any,
+  signup: (email: string, password: string, username: string) => any,
   signin: (email: string, password: string) => any
-
 }
 
 const FormView = (props: IFormProps) => {
@@ -21,7 +20,7 @@ const FormView = (props: IFormProps) => {
   const [pass, setPass] = useState("");     
 
   const handleSubmit = () => {
-    props.signup(email, pass);
+    props.signup(email, pass, username);
   };
 
   return (
