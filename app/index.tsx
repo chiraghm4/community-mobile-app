@@ -14,11 +14,13 @@ import {
   signInWithEmailAndPassword,
 } from "@firebase/auth";
 import { router } from "expo-router";
-import FormView from "@/components/Forms";
+import { FormViewSignup, FormViewLogin } from "@/components/Forms";
 import { db } from "@/firestore";
 import { collection, addDoc } from "firebase/firestore";
 
 const LoginPage = () => {
+  const [createNewAcc, setCreateNewAcc] = useState(false);
+
   const signIn = async (email: string, password: string) => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
@@ -33,12 +35,12 @@ const LoginPage = () => {
     try {
       const user = await createUserWithEmailAndPassword(auth, email, password);
 
-    //   trying to reflect the new user in firestore
-      await addDoc(collection(db, 'users'), {
+      //   trying to reflect the new user in firestore
+      await addDoc(collection(db, "users"), {
         userId: user.user.uid,
         username: username,
-        communities: []
-      })
+        communities: [],
+      });
 
       if (user) router.replace("/(tabs)");
     } catch (error: any) {
@@ -49,8 +51,41 @@ const LoginPage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text onPress={() => router.replace("/(tabs)/(posts)")}>Sign up</Text>
-      <FormView signup={signUp} signin={signIn} />
+      <Text onPress={() => router.push("/(tabs)/(posts)")}>Sign up</Text>
+      <Text onPress={() => router.push("/(profile)/ProfilePage")}>
+        to the profile page
+      </Text>
+      {createNewAcc ? (
+        <FormViewSignup actionHandler={signUp} />
+      ) : (
+        <FormViewLogin actionHandler={signIn} />
+      )}
+
+      <View
+        style={{
+          marginTop: 12,
+        }}
+      >
+        {createNewAcc ? (
+          <Text
+            style={{
+              color: "blue",
+            }}
+            onPress={() => setCreateNewAcc(!createNewAcc)}
+          >
+            Already have an account?
+          </Text>
+        ) : (
+          <Text
+            style={{
+              color: "blue",
+            }}
+            onPress={() => setCreateNewAcc(!createNewAcc)}
+          >
+            Create a new account?
+          </Text>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
