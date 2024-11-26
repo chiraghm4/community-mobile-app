@@ -6,6 +6,7 @@ import { Pressable } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -17,7 +18,6 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
@@ -50,8 +50,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Tab Two',
+          title: 'Posts',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="Three"
+        options={{
+          title: 'Communities',
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons name= {'account-multiple'} size={26} color={'black'}/>,
         }}
       />
     </Tabs>

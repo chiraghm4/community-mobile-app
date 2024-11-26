@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-
+import React from 'react';
 import { useColorScheme } from '@/components/useColorScheme';
 
 export {
@@ -23,10 +23,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
-
+    'manro' : require('@/assets/fonts/Manrope/static/Manrope-Regular.ttf'),
+    'manro-sb' : require('@/assets/fonts/Manrope/static/Manrope-SemiBold.ttf'),
+    'manro-b' : require('@/assets/fonts/Manrope/static/Manrope-ExtraBold.ttf'),
+  })
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;

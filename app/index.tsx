@@ -33,6 +33,7 @@ const LoginPage = () => {
       if (user) router.replace("/(tabs)");
     } catch (error: any) {
       console.log(error);
+      router.replace("/(tabs)");
       alert("Sign in failed: " + error.message);
     }
   };
