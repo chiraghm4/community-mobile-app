@@ -8,39 +8,96 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import { auth } from "@/FirebaseConfig";
 import {
   createUserWithEmailAndPassword,
+  getAuth,
   signInWithEmailAndPassword,
+  signOut,
 } from "@firebase/auth";
 import { router } from "expo-router";
-import FormView from "@/components/Forms";
+import { FormViewSignup, FormViewLogin } from "@/components/Forms";
+import { db } from "@/firestore";
+import { collection, addDoc } from "firebase/firestore";
+import { app } from "@/FirebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginPage = () => {
+  const [User, setUser] = useState();
+  const auth = getAuth(app);
+  const [createNewAcc, setCreateNewAcc] = useState(false);
+
   const signIn = async (email: string, password: string) => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
       if (user) router.replace("/(tabs)");
     } catch (error: any) {
       console.log(error);
-      alert("Sign in failed: " + error.message);
+      alert(error.message);
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, username: string) => {
     try {
       const user = await createUserWithEmailAndPassword(auth, email, password);
+
+      //   trying to reflect the new user in firestore
+      await addDoc(collection(db, "users"), {
+        userId: user.user.uid,
+        username: username,
+        communities: [],
+      });
+
       if (user) router.replace("/(tabs)");
+
+      console.log(AsyncStorage.getAllKeys());
     } catch (error: any) {
       console.log(error);
       alert("Sign in failed: " + error.message);
     }
   };
 
+  const signOutUser = async () => {
+    signOut(auth).then(() => {
+      Alert.alert("user signed out");
+      router.replace("/");
+    });
+  };
+
+  if (User) router.push("/(tabs)/(posts)");
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text>Sign up</Text>
-      <FormView signup={signUp} signin={signIn} />
+      {createNewAcc ? (
+        <FormViewSignup actionHandler={signUp} />
+      ) : (
+        <FormViewLogin actionHandler={signIn} />
+      )}
+
+      <View
+        style={{
+          marginTop: 12,
+        }}
+      >
+        {createNewAcc ? (
+          <Text
+            style={{
+              color: "blue",
+            }}
+            onPress={() => setCreateNewAcc(!createNewAcc)}
+          >
+            Already have an account?
+          </Text>
+        ) : (
+          <Text
+            style={{
+              color: "blue",
+            }}
+            onPress={() => setCreateNewAcc(!createNewAcc)}
+          >
+            Create a new account?
+          </Text>
+        )}
+      </View>
     </SafeAreaView>
   );
 };

@@ -26,7 +26,7 @@ export const FormViewSignup = (props: IFormProps) => {
       await props.actionHandler(email, pass, username);
     } catch (error) {
       console.log(error);
-    } finally {
+    } finally { 
       setIsLoading(false);
     }
   };
