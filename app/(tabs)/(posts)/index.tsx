@@ -1,12 +1,14 @@
 import { View, Text } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
+import PostData from '@/assets/Data/fakeData.json';
+import Posts from '@/Components/Posts';
 
-const PostsPage = () => {
+
+export default function PostsPage() {
+  const getPosts = useMemo(() => PostData.dataMedium, []);
   return (
     <View>
-      <Text>PostsPage</Text>
+      <Posts Postings={getPosts} community="abc" />
     </View>
   )
 }
-
-export default PostsPage
