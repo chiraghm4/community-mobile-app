@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
-import { Pressable } from "react-native";
+import { Alert, Button, Pressable } from "react-native";
 
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import { getAuth, onAuthStateChanged } from "@firebase/auth";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -18,19 +19,34 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) setIsAuthenticated(true);
+    else setIsAuthenticated(false);
+  }, [onAuthStateChanged]);
+
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
-        headerShown: false
+        headerShown: false,
       }}
     >
-      <Tabs.Screen name="(posts)" />
-      <Tabs.Screen name="(communities)" />
-      <Tabs.Screen name="(restaurants)" />
-      <Tabs.Screen name="(recipes)" />
+      {!isAuthenticated ? (
+        <>
+          <Tabs.Screen name="(posts)" />
+          <Tabs.Screen name="(communities)" />
+          <Tabs.Screen name="(restaurants)" />
+          <Tabs.Screen name="(recipes)" />
+        </>
+      ) : (
+        <Tabs.Screen name="/_not_authenticated" />
+      )}
     </Tabs>
   );
 }

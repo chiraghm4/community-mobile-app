@@ -2,16 +2,18 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme,
   DefaultTheme,
+  NavigationContainer,
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as React from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { getAuth } from "@firebase/auth";
+import { Alert, Button, Pressable } from "react-native";
+import { Stack } from "expo-router";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,28 +50,24 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-
-  React.useEffect(() => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) setIsAuthenticated(false);
-    else setIsAuthenticated(true);
-  }, []);
+  const auth = getAuth();
+  const user = auth.currentUser;
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" />
-        {isAuthenticated ? (
-          <>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="(profile)/ProfilePage" />
-          </>
-        ) : (
-          <></>
-        )}
-      </Stack>
+      <NavigationContainer>
+        <Stack  >
+          {user !== null ? (
+            <>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="(profile)/ProfilePage" />
+              
+            </>
+          ) : (
+            <Stack.Screen name="index" />
+          )}
+        </Stack>
+      </NavigationContainer>
     </ThemeProvider>
   );
 }
