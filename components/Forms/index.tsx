@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Button,
   SafeAreaView,
   StatusBar,
@@ -10,22 +11,28 @@ import {
 } from "react-native";
 
 interface IFormProps {
-  signup: (email: string, password: string) => any,
-  signin: (email: string, password: string) => any
-
+  actionHandler: (email?: string, username?: string, password?: string) => void,
 }
 
-const FormView = (props: IFormProps) => {
+export const FormViewSignup = (props: IFormProps) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");     
+  const [pass, setPass] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
-    props.signup(email, pass);
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      await props.actionHandler(email, pass, username);
+    } catch (error) {
+      console.log(error);
+    } finally { 
+      setIsLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styleSheet.container}> 
+    <SafeAreaView style={styleSheet.container}>
       <View style={styleSheet.form}>
         <Text style={styleSheet.label}>Username</Text>
         <TextInput
@@ -35,7 +42,7 @@ const FormView = (props: IFormProps) => {
           value={username}
         />
         <Text style={styleSheet.label}>Email</Text>
-        <TextInput  
+        <TextInput
           placeholder="Enter your Email"
           style={styleSheet.input}
           onChangeText={setEmail}
@@ -49,7 +56,56 @@ const FormView = (props: IFormProps) => {
           onChangeText={setPass}
           value={pass}
         />
-        <Button title="Login" onPress={handleSubmit} />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <Button title="Signup" onPress={handleSubmit} />
+        )}
+      </View>
+    </SafeAreaView>
+  );
+};
+
+export const FormViewLogin = (props: IFormProps) => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      await props.actionHandler(email, pass);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styleSheet.container}>
+      <View style={styleSheet.form}>
+        <Text style={styleSheet.label}>Email</Text>
+        <TextInput
+          placeholder="Enter your Email"
+          style={styleSheet.input}
+          onChangeText={setEmail}
+          value={email}
+        />
+        <Text style={styleSheet.label}>Password</Text>
+        <TextInput
+          placeholder="Enter your Password"
+          style={styleSheet.input}
+          secureTextEntry
+          onChangeText={setPass}
+          value={pass}
+        />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <Button title="Login" onPress={handleSubmit} />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -57,7 +113,7 @@ const FormView = (props: IFormProps) => {
 
 const styleSheet = StyleSheet.create({
   container: {
-    width: "80%"
+    width: "80%",
   },
   form: {
     backgroundColor: "white",
@@ -86,5 +142,3 @@ const styleSheet = StyleSheet.create({
     borderRadius: 5,
   },
 });
-
-export default FormView;
