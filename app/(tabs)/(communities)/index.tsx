@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native'
 import React, { useMemo } from 'react'
 import CommunitiesData from '@/assets/Data/fakeCommunitiesData.json'
-import CommunitiesComp from '@/Components/Communities';
+import CommunitiesComp from '@/components/Communities';
 
 const CommunitiesPage = () => {
   const getComunities = useMemo(() => CommunitiesData.dataMedium, []);

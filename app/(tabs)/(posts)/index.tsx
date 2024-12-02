@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React, { useMemo } from 'react'
 import PostData from '@/assets/Data/fakeData.json';
-import Posts from '@/Components/Posts';
+import Posts from '@/components/Posts';
 
 
 export default function PostsPage() {
@@ -13,8 +13,8 @@ export default function PostsPage() {
         <Text style={styleSheet.buttonText}>+ Post</Text>
       </TouchableOpacity>
     </View>
-  )
-}
+  );
+};
 
 const styleSheet = StyleSheet.create({
   floatingButton: {

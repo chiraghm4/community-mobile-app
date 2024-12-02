@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -10,11 +10,11 @@ export default function RootLayout() {
     'manro-b' : require('@/assets/fonts/Manrope/static/Manrope-ExtraBold.ttf'),
   })
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
+  React.useEffect(() => {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
