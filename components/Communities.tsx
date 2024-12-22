@@ -6,8 +6,10 @@ import { Feather } from '@expo/vector-icons';
 export interface CommunitiesIntf {
     id: number;
     title: string;
-    image: string;
+    image: string | null;
     noOfMembers : number;
+    postsID: Array<string>;
+    subscribedUsers: Array<string>;
 }
 interface Props {
     CommunitiesInfo : CommunitiesIntf[];
@@ -34,10 +36,10 @@ const CommunitiesComp = ({CommunitiesInfo} : Props) => {
                             <View style = {styles.InfoUpper}>
                                 <Text style = {styles.communityTitle}>{item.title}</Text>
                             </View>
-                            <View style = {styles.InfoLower}>
-                                <Feather name = {'users'} size={16}></Feather>
+                            {/* <View style = {styles.InfoLower}>
+                                <Feather name = {'menu'} size={16}></Feather>
                                 <Text style = {styles.noOfMembers}>{item.noOfMembers}</Text>
-                            </View>
+                            </View> */}
                     </View>
                     <View style={styles.buttonContainer}>
                         <Pressable style={styles.button} onPress={() => {console.log("Join button clicked")}}>

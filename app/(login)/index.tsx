@@ -2,8 +2,6 @@ import {
   View,
   Text,
   SafeAreaView,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
 } from "react-native";
@@ -43,7 +41,8 @@ const LoginPage = () => {
       //   trying to reflect the new user in firestore
       await addDoc(collection(db, "users"), {
         userId: user.user.uid,
-        username: username,
+        username,
+        email,
         communities: [],
       });
 

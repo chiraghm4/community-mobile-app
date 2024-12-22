@@ -12,8 +12,8 @@ export interface PostInf {
     title: string;
     date: string;
     link: string;
-    image: string;
-    description: string;
+    image: string | null;
+    desc: string;
     tags: string[];
 }
 
@@ -45,9 +45,9 @@ const Posts = ({ Postings, community }: Props) => {
     //Cu
     const renderRow: ListRenderItem<PostInf> = ({ item }: ListRenderItemInfo<PostInf>) => {
         const maxLength = 100;
-        const truncatedDescription = item.description.length > maxLength 
-            ? `${item.description.substring(0, maxLength)}...` 
-            : item.description;
+        const truncatedDescription = item.desc.length > maxLength 
+            ? `${item.desc.substring(0, maxLength)}...` 
+            : item.desc;
         const isLiked = likedPosts[item.id] || false;
         const isStarred = starredPosts[item.id] || false;
         return (
