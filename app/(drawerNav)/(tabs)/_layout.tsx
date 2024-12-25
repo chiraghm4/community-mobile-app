@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
 import { Alert, Button, Pressable } from "react-native";
-
 import { getAuth, onAuthStateChanged } from "@firebase/auth";
-
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -12,6 +10,7 @@ function TabBarIcon(props: {
 }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
+
 
 export default function TabLayout() {
 
@@ -29,7 +28,7 @@ export default function TabLayout() {
       screenOptions={{
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
-        headerShown: true,
+        headerShown: false,
       }}
     >
       {!isAuthenticated ? (
@@ -38,6 +37,7 @@ export default function TabLayout() {
           <Tabs.Screen name="(communities)" />
           <Tabs.Screen name="(restaurants)" />
           <Tabs.Screen name="(recipes)" />
+          <Tabs.Screen name="(drawerNav)" options={{ headerShown : true}}/>
         </>
       ) : (
         <Tabs.Screen name="/_not_authenticated" />

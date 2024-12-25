@@ -3,6 +3,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import React, { useEffect } from "react";
 
+
+
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     'manro' : require('@/assets/fonts/Manrope/static/Manrope-Regular.ttf'),
@@ -27,13 +30,13 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+
 function RootLayoutNav() {
   return (
     <Stack screenOptions={{
       headerShown: false
     }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="Post/[id]" options={{headerTitle : '', headerTransparent : true}}/>
     </Stack>
   )

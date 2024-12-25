@@ -28,7 +28,7 @@ const getUserCommunities = async () => {
 
     const subscribedComms = userData[0]?.communities;
 
-    return subscribedComms;
+    return {subscribedComms, userData};
   } catch (e) {
     console.log(e);
     return e;
@@ -37,7 +37,7 @@ const getUserCommunities = async () => {
 
 const fetchPostsByCommunities = async () => {
   try {
-    const subscribedComms = await getUserCommunities();
+    const {subscribedComms} = await getUserCommunities();
     console.log(subscribedComms);
 
     const postsRef = collection(db, "posts");
