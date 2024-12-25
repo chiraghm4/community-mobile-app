@@ -26,7 +26,7 @@ const getUserCommunities = async () => {
       return { ...doc.data(), id: doc.id };
     });
 
-    const subscribedComms = userData[0].communities;
+    const subscribedComms = userData[0]?.communities;
 
     return subscribedComms;
   } catch (e) {
