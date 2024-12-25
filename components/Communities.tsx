@@ -25,6 +25,7 @@ const CommunitiesComp = ({CommunitiesInfo} : Props) => {
 
     const renderRow: ListRenderItem<CommunitiesIntf> = ({ item }: ListRenderItemInfo<CommunitiesIntf>) => {
         return (
+            
             <BlurView intensity={90} tint="light" style={styles.card}>
                 <View style = {styles.container}>
                     <View style = {styles.imageContainer}>
@@ -50,6 +51,12 @@ const CommunitiesComp = ({CommunitiesInfo} : Props) => {
     };
     
     const communitiesRef = useRef<FlatList>(null);
+    //Custom Seperator component
+    const renderSeparator = () => (
+        <View style={styles.separatorContainer}>
+          <View style={styles.separator} />
+        </View>
+    );
   return (
     <View>
       <FlatList
@@ -58,7 +65,7 @@ const CommunitiesComp = ({CommunitiesInfo} : Props) => {
         ref={communitiesRef}
         data={loading ? [] : CommunitiesInfo}
         keyExtractor={(item) => item.id.toString()}
-        //ItemSeparatorComponent={renderSeparator}
+        ItemSeparatorComponent={renderSeparator}
       />
 
     </View>
@@ -68,89 +75,74 @@ const CommunitiesComp = ({CommunitiesInfo} : Props) => {
 export default CommunitiesComp;
 
 const styles = StyleSheet.create({
+    separatorContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    separator: {
+      width: '60%', 
+      height: 1,   
+      backgroundColor: '#ddd', 
+    },
     card: {
-        width: '95%',
-        height: 80,
-        alignSelf: 'center',
-        marginVertical: '3%',
-        borderRadius: 50, // Capsule shape with 50px border-radius
-        overflow: 'hidden', // Ensures content stays within rounded corners
-        backgroundColor: '#ffffff', // White background for the card
-        shadowColor: '#bebebe', // Light shadow color for inner shadow effect
-        shadowOffset: { width: 4, height: 4 }, // Shadow to create raised effect
-        shadowOpacity: 0.5, // Light shadow opacity
-        shadowRadius: 10, // Soft shadow
-        elevation: 5, // Elevation for Android
-        borderWidth: 1,
-        borderColor: '#ffffff', // Light border for contrast
-        boxShadow: 'inset 20px 20px 60px #bebebe, inset -20px -20px 60px #ffffff', // Inset shadow effect for neumorphism
+      padding: 13,
+      flexDirection: 'row', // Horizontal layout for three sections
+      alignItems: 'center',
+      backgroundColor: '#FFFFFF', // Flat white background
     },
     container: {
-        flexDirection: 'row',
-        flex: 1,
-        alignItems: 'center',
-        paddingHorizontal: 10, // Add horizontal padding
+      flex: 1,
+      flexDirection: 'row', // Three sections
+      alignItems: 'center',
     },
     imageContainer: {
-        flex: 1, // 1/5 of the row
-        justifyContent: 'center',
-        alignItems: 'center',
+      flex: 1, // First section for the image
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     communityImage: {
-        width: 50, // Ensure the image size is small and consistent
-        height: 50,
-        borderRadius: 25, // Full round shape
-        borderWidth: 2,
-        borderColor: '#fff', // Light border for the image
-        shadowColor: '#a3b1c6',
-        shadowOffset: { width: 1, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
+      width: 50,
+      height: 50,
+      borderRadius: 25, // Circular image
+      resizeMode: 'cover',
     },
     infoContainer: {
-        flex: 3, // 3/5 of the row
-        justifyContent: 'center',
-        paddingHorizontal: 10, // Spacing around text
-    },
-    communityTitle: {
-        fontWeight: '600',
-        fontSize: 14,
-        color: '#333', // Dark text for contrast
+      flex: 2, // Middle section for info
+      flexDirection: 'column', // Stack title and members vertically
+      justifyContent: 'center',
+      paddingHorizontal: 12,
     },
     InfoUpper: {
-        justifyContent: 'center',
+      marginBottom: 5, // Space below the title
     },
     InfoLower: {
-        paddingTop : '4%',
-        flexDirection : 'row',
-        gap : 5,
+      flexDirection: 'row', // Align icon and member count horizontally
+      alignItems: 'center',
+    },
+    communityTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#2C2C2C', // Dark gray for text
     },
     noOfMembers: {
-        fontSize: 12,
-        color: '#555', // Subtle gray
+      fontSize: 13,
+      color: '#6D6D6D', // Muted gray for less emphasis
+      marginLeft: 4,
     },
     buttonContainer: {
-        flex: 1, // 1/5 of the row
-        justifyContent: 'center',
-        alignItems: 'center',
+      flex: 1, // Last section for the button
+      alignItems: 'flex-end', // Align button to the right
     },
     button: {
-        backgroundColor: '#e0e0e0', // Soft gray to match neumorphic style
-        paddingHorizontal: 14, // Add padding for better button size
-        paddingVertical: 7,
-        borderRadius: 25, // Pill-shaped button
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#bebebe', // Inset shadow to simulate "pressed" effect
-        shadowOffset: { width: 4, height: 4 }, // Shadow to make it look "pressed"
-        shadowOpacity: 0.5, // Darker shadow for depth
-        shadowRadius: 6, // Slightly larger radius for shadow
-        elevation: 4, // Elevation for Android devices
-        boxShadow: 'inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff', // Pushed-in shadow effect
+      backgroundColor: '#f0f0f0', // Flat blue button
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 20, // Smooth edges
     },
     buttonText: {
-        color: '#333', // Text color for better visibility
-        fontSize: 14,
-        fontWeight: 'bold',
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#00000', // White text on blue button
     },
-});
+  });
+  
