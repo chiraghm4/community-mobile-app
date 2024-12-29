@@ -5,12 +5,21 @@ import Posts from "@/components/Posts";
 import AddNewForm from "@/components/Forms/AddNewForm";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firestore";
-import {fetchPostsByCommunities} from '@/helpers/hGetUsersPosts'
+import { fetchPostsByCommunities } from '@/helpers/hGetUsersPosts'
 
 export default function PostsPage() {
   const getPosts = useMemo(() => PostData.dataMedium, []);
   const [showModal, setShowModal] = useState(false);
   const [posts, setPosts] = useState([]);
+
+  // Function to update a single post's data
+  const handleUpdatePost = (updatedPost : any) => {
+    setPosts(currentPosts => 
+      currentPosts.map(post => 
+        post.docID === updatedPost.docID ? updatedPost : post
+      )
+    );
+  };
 
   useEffect(() => {
     const getPosts = async () => {
@@ -26,7 +35,11 @@ export default function PostsPage() {
 
   return (
     <View>
-      <Posts Postings={posts} community="abc" />
+      <Posts 
+        Postings={posts} 
+        community="abc" 
+        onUpdatePost={handleUpdatePost}  // Pass down the update function
+      />
       <TouchableOpacity style={styleSheet.floatingButton}>
         <Text style={styleSheet.buttonText} onPress={() => setShowModal(true)}>
           + Post
@@ -41,7 +54,6 @@ export default function PostsPage() {
     </View>
   );
 }
-
 const styleSheet = StyleSheet.create({
   floatingButton: {
     position: "absolute",
