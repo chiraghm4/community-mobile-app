@@ -13,8 +13,6 @@ const getUserCommunities = async () => {
   try {
     const auth = getAuth();
     const currUser = auth.currentUser;
-    console.log(currUser?.uid, "current user");
-
     const userRef = collection(db, "users");
 
     const q = query(userRef, where("userId", "==", currUser?.uid));
