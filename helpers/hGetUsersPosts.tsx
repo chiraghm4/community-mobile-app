@@ -8,6 +8,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import { GetFavouritePosts } from "./hGetFavouritePosts";
 
 const getUserCommunities = async () => {
   try {
@@ -37,16 +38,21 @@ const fetchPostsByCommunities = async () => {
   try {
     const {subscribedComms} = await getUserCommunities();
     console.log(subscribedComms);
-
+    const favPostsList = await GetFavouritePosts();
     const postsRef = collection(db, "posts");
 
     const q = query(postsRef, where("community", "in", subscribedComms));
     const querySnapshot = await getDocs(q);
 
-    const postsData = querySnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    }));
+    const postsData = querySnapshot.docs.map((doc) => {
+      const isFav = favPostsList?.includes(doc.id);
+      return {
+        ...doc.data(),
+        id: doc.id,
+        docID: doc.id,
+        isFavourite: isFav || false,
+      };
+    });
 
     if(querySnapshot.empty)
       return {error: "error occured in helper func"}

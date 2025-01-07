@@ -6,7 +6,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import  Animated, { FadeInRight, FadeOutLeft }  from 'react-native-reanimated';
-
+import { setPostAsFavourite } from '@/helpers/hSetFavouritePosts';
 export interface PostInf {
     id: number;
     title: string;
@@ -15,16 +15,19 @@ export interface PostInf {
     image: string | null;
     desc: string;
     tags: string[];
+    docID : string;
+    isFavourite : boolean
 }
 
 interface Props {
     Postings: PostInf[];
     community: string;
+    onUpdatePost?: (updatedPost: PostInf) => void;  // Add this
 }
 
 const router = useRouter();
 
-const Posts = ({ Postings, community }: Props) => {
+const Posts = ({ Postings, community, onUpdatePost }: Props) => {
     const [loading, setLoading] = useState(false);
     const postsRef = useRef<FlatList>(null);
 
@@ -42,7 +45,6 @@ const Posts = ({ Postings, community }: Props) => {
         </View>
     );
 
-    //Cu
     const renderRow: ListRenderItem<PostInf> = ({ item }: ListRenderItemInfo<PostInf>) => {
         const maxLength = 100;
         const truncatedDescription = item.desc.length > maxLength 
@@ -78,11 +80,11 @@ const Posts = ({ Postings, community }: Props) => {
                                 <TouchableOpacity onPress={() => console.log('Comments clicked')}>
                                     <FontAwesome name="comments-o" size={18} color="black" />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => toggleStar(item.id)}>
+                                <TouchableOpacity onPress={() => toggleStar(item.id,item.docID)}>
                                     <AntDesign
-                                            name={isStarred ? 'star' : 'staro'} 
+                                            name={item.isFavourite ? 'star' : 'staro'} 
                                             size={18}
-                                            color={isStarred ? 'goldenrod' : 'gray'}
+                                            color={item.isFavourite ? 'goldenrod' : 'gray'}
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -101,12 +103,27 @@ const Posts = ({ Postings, community }: Props) => {
         }));
     };
 
-    // Toggle Star
-    const toggleStar = (id: number) => {
-        setStarredPosts((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+    const toggleStar = async (id: number, postId: string) => {
+        try {
+            // Find the post and create updated version
+            const postToUpdate = Postings.find(post => post.docID === postId);
+            if (!postToUpdate) return;
+    
+            const updatedPost = {
+                ...postToUpdate,
+                isFavourite: !postToUpdate.isFavourite
+            };
+            
+            // Update Firebase
+            await setPostAsFavourite(postId);
+    
+            // Update parent component state
+            onUpdatePost?.(updatedPost);
+            
+        } catch (error) {
+            console.error("Error updating favorite status:", error);
+            // Optionally show an error message to the user
+        }
     };
 
     return (
