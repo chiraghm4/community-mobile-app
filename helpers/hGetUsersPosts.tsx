@@ -37,7 +37,6 @@ const getUserCommunities = async () => {
 const fetchPostsByCommunities = async () => {
   try {
     const {subscribedComms} = await getUserCommunities();
-    console.log(subscribedComms);
     const favPostsList = await GetFavouritePosts();
     const postsRef = collection(db, "posts");
 

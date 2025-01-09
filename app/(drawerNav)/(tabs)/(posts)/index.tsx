@@ -3,9 +3,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import PostData from "@/assets/Data/fakeData.json";
 import Posts from "@/components/Posts";
 import AddNewForm from "@/components/Forms/AddNewForm";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/firestore";
 import { fetchPostsByCommunities } from '@/helpers/hGetUsersPosts'
+import { getAuth } from "firebase/auth";
 
 export default function PostsPage() {
   const getPosts = useMemo(() => PostData.dataMedium, []);
@@ -32,6 +33,26 @@ export default function PostsPage() {
     };
     getPosts();
   }, []);
+
+  useEffect(() => {
+    const auth = getAuth()
+    const uid = auth.currentUser?.uid
+    const userRef = collection(db, 'users')
+    const q = query(userRef, where("userId", '==', uid))
+
+    const unsub = onSnapshot(q, async (querySnapshot) => {
+      try {
+        const subscribedComms = querySnapshot.docs[0].data().communities
+        console.log(subscribedComms, 'updated comms')
+        const postsData = await fetchPostsByCommunities()
+        setPosts(postsData)
+      } catch(e) {
+        console.log(e)
+      }
+
+      return () => unsub()
+    })
+  }, [])
 
   return (
     <View>

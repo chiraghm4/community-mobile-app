@@ -1,9 +1,13 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from
+'react-native'
 import React, { useEffect, useState } from 'react'
 import { AntDesign, Feather } from '@expo/vector-icons'
 import { db } from '@/firestore'
 import Posts from "@/components/Posts";
 import { hGetFavouritePostsData } from '@/helpers/hGetFavouritePostsData'
+import { query, collection, onSnapshot, documentId, getDocs, where }
+from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 const FavouritesPage = () => {
   const [posts, setPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,7 +17,7 @@ const FavouritesPage = () => {
   const handleSearch = (text : any) => {
     setSearchQuery(text);
     if (text.trim() === '') {
-      setFilteredPosts(posts); 
+      setFilteredPosts(posts);
     } else {
       const filtered = posts.filter((post) =>
         post.title.toLowerCase().includes(text.toLowerCase())
@@ -28,29 +32,72 @@ const FavouritesPage = () => {
   };
 
   const handleUpdatePost = (updatedPost : any) => {
-  setPosts(currentPosts => 
-      currentPosts.map(post => 
+  setPosts(currentPosts =>
+      currentPosts.map(post =>
         post.docID === updatedPost.docID ? updatedPost : post
       )
     );
   };
 
+
   useEffect(() => {
-    const getPosts = async () => {
+    const auth = getAuth();
+    const currUser = auth.currentUser;
+
+    if (!currUser) return;
+
+    // Listen to changes in user's favorites
+    const userRef = collection(db, "users");
+    const userQuery = query(userRef, where("userId", "==", currUser.uid));
+
+    const unsubscribe = onSnapshot(userQuery, async (userSnapshot) => {
       try {
-        const postsData = await hGetFavouritePostsData();
-        setPosts(postsData);
-        setFilteredPosts(postsData);
-      } catch (e) {
-        console.log("error fetching docs", e);
+        // Get favorite post IDs from user document
+        const favouritePosts = userSnapshot.docs[0]?.data()?.favourites || [];
+
+        if (!favouritePosts.length) {
+          setPosts([]);
+          setFilteredPosts([]);
+          return;
+        }
+
+        // Filter valid IDs
+        const validFavorites = favouritePosts.filter(id => id &&
+typeof id === 'string' && id.length > 0);
+
+        if (!validFavorites.length) {
+          setPosts([]);
+          setFilteredPosts([]);
+          return;
+        }
+
+        // Get posts data
+        const postsRef = collection(db, "posts");
+        const favPostsDataQuery = query(postsRef, where(documentId(),
+"in", validFavorites));
+        const favPostsData = await getDocs(favPostsDataQuery);
+
+        const favorites = favPostsData.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id,
+          docID: doc.id,
+          isFavourite: true,
+        }));
+
+        setPosts(favorites);
+        setFilteredPosts(favorites);
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
       }
-    };
-    getPosts();
+    });
+
+    return () => unsubscribe();
   }, []);
   return (
     <View style={{ flex: 1, backgroundColor : '#ffffff' }}>
       <View style = {styles.searchContainer}>
-        <Feather name="search" size={24} color="gray" style={styles.searchIcon} />
+        <Feather name="search" size={24} color="gray"
+style={styles.searchIcon} />
         <TextInput
           style = {styles.searchField}
           placeholder='Search Posts....'
@@ -59,14 +106,15 @@ const FavouritesPage = () => {
           clearButtonMode="never"
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={clearSearch} style={styles.clearIconContainer}>
+          <TouchableOpacity onPress={clearSearch}
+style={styles.clearIconContainer}>
             <AntDesign name="closecircle" size={20} color="gray" />
           </TouchableOpacity>
         )}
       </View>
-      <Posts 
-        Postings={filteredPosts} 
-        community="abc" 
+      <Posts
+        Postings={filteredPosts}
+        community="abc"
         onUpdatePost={handleUpdatePost}  // Pass down the update function
       />
     </View>
@@ -98,3 +146,4 @@ const styles = StyleSheet.create({
 })
 
 export default FavouritesPage
+
