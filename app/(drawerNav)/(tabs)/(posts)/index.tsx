@@ -10,7 +10,6 @@ import { getAuth } from "firebase/auth";
 
 export default function PostsPage() {
   const getPosts = useMemo(() => PostData.dataMedium, []);
-  const [showModal, setShowModal] = useState(false);
   const [posts, setPosts] = useState([]);
 
   // Function to update a single post's data
@@ -61,17 +60,6 @@ export default function PostsPage() {
         community="abc" 
         onUpdatePost={handleUpdatePost}  // Pass down the update function
       />
-      <TouchableOpacity style={styleSheet.floatingButton}>
-        <Text style={styleSheet.buttonText} onPress={() => setShowModal(true)}>
-          + Post
-        </Text>
-        {showModal ? (
-          <AddNewForm
-            showModal={showModal}
-            handleClose={() => setShowModal(!showModal)}
-          />
-        ) : null}
-      </TouchableOpacity>
     </View>
   );
 }
