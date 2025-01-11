@@ -35,6 +35,7 @@ export default function TabLayout() {
         <>
           <Tabs.Screen name="(posts)" />
           <Tabs.Screen name="(communities)" />
+          <Tabs.Screen name="(addNew)" />
           <Tabs.Screen name="(restaurants)" />
           <Tabs.Screen name="(recipes)" />
           <Tabs.Screen name="(drawerNav)" options={{ headerShown : true}}/>

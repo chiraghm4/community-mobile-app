@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Feather, AntDesign } from "@expo/vector-icons";
-import CommunitiesData from "@/assets/Data/fakeCommunitiesData.json";
 import CommunitiesComp from "@/components/Communities";
 import { getAllCommunities } from "@/helpers/hSubscribeToComm";
 import { getUserCommunities } from "@/helpers/hGetUsersPosts";
 
 const CommunitiesPage = () => {
-  // const allCommunities = useMemo(() => CommunitiesData.dataMedium, []);
   const [allCommunities, setAllCommunities] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCommunities, setFilteredCommunities] =

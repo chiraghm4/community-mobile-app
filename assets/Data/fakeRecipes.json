@@ -1,0 +1,14 @@
+{
+    "fakeRecipes": [
+        {
+            "id": 1,
+            "title": "aand bhaat",
+            "desc": "aand + bhaat"
+        },
+        {
+            "id": 2,
+            "title": "lauda pav",
+            "desc": "lauda + pav"
+        }
+    ]
+}
