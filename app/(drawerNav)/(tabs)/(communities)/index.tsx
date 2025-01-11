@@ -4,6 +4,7 @@ import { Feather, AntDesign } from "@expo/vector-icons";
 import CommunitiesData from "@/assets/Data/fakeCommunitiesData.json";
 import CommunitiesComp from "@/components/Communities";
 import { getAllCommunities } from "@/helpers/hSubscribeToComm";
+import { getUserCommunities } from "@/helpers/hGetUsersPosts";
 
 const CommunitiesPage = () => {
   // const allCommunities = useMemo(() => CommunitiesData.dataMedium, []);
@@ -26,6 +27,14 @@ const CommunitiesPage = () => {
     fetchAllComms();
   }, []);
 
+  useEffect(() => {
+    const getUserSubscribedComms = async () => {
+      const {subscribedComms} = await getUserCommunities()
+      console.log(subscribedComms, 'subscribed comms by user')
+    }
+    getUserSubscribedComms()
+  }, [])
+
   const handleSearch = (text: any) => {
     setSearchQuery(text);
     if (text.trim() === "") {
@@ -42,8 +51,6 @@ const CommunitiesPage = () => {
     setSearchQuery("");
     setFilteredCommunities(allCommunities);
   };
-
-  console.log(allCommunities, "all comms");
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>

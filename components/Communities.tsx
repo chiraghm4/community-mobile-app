@@ -13,6 +13,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import { getUserCommunities } from "@/helpers/hGetUsersPosts";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "@/firestore";
+import { getAuth } from "firebase/auth";
+import { subscribeCommunity } from "@/helpers/hSubscribeToComm";
 
 export interface CommunitiesIntf {
   id: number;
@@ -40,18 +44,46 @@ const CommunitiesComp = ({ CommunitiesInfo }: Props) => {
 
   const [userComms, setUserComms] = useState([]);
 
-    useEffect(() => {
-      const userSubedComms = async () => {
-        const { subscribedComms } = await getUserCommunities();
-        setUserComms(subscribedComms);
-      };
-      userSubedComms();
-    }, []);
+  useEffect(() => {
+    const userSubedComms = async () => {
+      const { subscribedComms } = await getUserCommunities();
+      setUserComms(subscribedComms);
+    };
+    userSubedComms();
+  }, []);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const currUser = auth.currentUser;
+    const userRef = collection(db, "users");
+    const q = query(userRef, where("userId", "==", currUser?.uid));
+
+    const unsub = onSnapshot(q, async (userSnapshot) => {
+      try {
+        const subscribedCommunties = userSnapshot.docs[0].data().communities;
+        console.log(subscribedCommunties, "comms in firebase");
+        console.log(userComms, "comms in state var");
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    return () => unsub();
+  }, [userComms]);
 
   const renderRow: ListRenderItem<CommunitiesIntf> = ({
     item,
   }: ListRenderItemInfo<CommunitiesIntf>) => {
     
+    const handleSubscribeBtn = async (commID: string) => {
+      await subscribeCommunity(commID);
+
+      if (userComms.includes(commID)) {
+        setUserComms((prevItems) => prevItems.filter((item) => item != commID));
+      } else {
+        setUserComms([...userComms, commID]);
+      }
+    };
 
     return (
       <BlurView intensity={90} tint="light" style={styles.card}>
@@ -74,7 +106,7 @@ const CommunitiesComp = ({ CommunitiesInfo }: Props) => {
             <Pressable
               style={styles.button}
               onPress={() => {
-                console.log(item);
+                handleSubscribeBtn(item.id);
               }}
             >
               <Text style={styles.buttonText}>

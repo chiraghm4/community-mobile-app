@@ -6,6 +6,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import  Animated, { FadeInRight, FadeOutLeft }  from 'react-native-reanimated';
+import { setPostAsFavourite } from '@/helpers/hSetFavouritePosts';
+import { likePost, removeLikeFromPost } from '@/helpers/hLikeUnlikePosts';
+
 
 export interface PostInf {
     id: number;
@@ -15,16 +18,22 @@ export interface PostInf {
     image: string | null;
     desc: string;
     tags: string[];
+    docID : string;
+    isFavourite : boolean;
+    isLiked : boolean;
+    noOfLikes : number
 }
 
 interface Props {
     Postings: PostInf[];
     community: string;
+    onUpdatePost?: (updatedPost: PostInf) => void;  // Add this
 }
 
 const router = useRouter();
 
-const Posts = ({ Postings, community }: Props) => {
+
+const Posts = ({ Postings, community, onUpdatePost }: Props) => {
     const [loading, setLoading] = useState(false);
     const postsRef = useRef<FlatList>(null);
 
@@ -42,14 +51,11 @@ const Posts = ({ Postings, community }: Props) => {
         </View>
     );
 
-    //Cu
     const renderRow: ListRenderItem<PostInf> = ({ item }: ListRenderItemInfo<PostInf>) => {
         const maxLength = 100;
         const truncatedDescription = item.desc.length > maxLength 
             ? `${item.desc.substring(0, maxLength)}...` 
             : item.desc;
-        const isLiked = likedPosts[item.id] || false;
-        const isStarred = starredPosts[item.id] || false;
         return (
                     <TouchableOpacity onPress={() => router.push(`/Post/${item.id}`)}>
                         <Animated.View style={styles.row} entering={FadeInRight} exiting={FadeOutLeft}>
@@ -66,23 +72,26 @@ const Posts = ({ Postings, community }: Props) => {
                                             {tag}
                                         </Text>
                                     ))}
-                                </View>
+                            </View>
                             <View style = {styles.bottomContainer}>
-                                <TouchableOpacity onPress={() => toggleLike(item.id)}>
-                                <MaterialCommunityIcons
-                                    name={isLiked ? 'thumb-up' : 'thumb-up-outline'}
-                                    size={18}
-                                    color={isLiked ? 'black' : 'gray'}
-                                />
-                                </TouchableOpacity>
+                                <View style={styles.likeContainer}>
+                                    <TouchableOpacity onPress={() => toggleLike(item.isLiked,item.docID)}>
+                                        <MaterialCommunityIcons
+                                            name={item.isLiked ? 'thumb-up' : 'thumb-up-outline'}
+                                            size={18}
+                                            color={item.isLiked ? 'black' : 'gray'}
+                                        />
+                                    </TouchableOpacity>
+                                    <Text style={styles.likeCount}>{item.numberOfLikes}</Text>
+                                </View>
                                 <TouchableOpacity onPress={() => console.log('Comments clicked')}>
                                     <FontAwesome name="comments-o" size={18} color="black" />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => toggleStar(item.id)}>
+                                <TouchableOpacity onPress={() => toggleStar(item.id,item.docID)}>
                                     <AntDesign
-                                            name={isStarred ? 'star' : 'staro'} 
+                                            name={item.isFavourite ? 'star' : 'staro'} 
                                             size={18}
-                                            color={isStarred ? 'goldenrod' : 'gray'}
+                                            color={item.isFavourite ? 'goldenrod' : 'gray'}
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -90,23 +99,38 @@ const Posts = ({ Postings, community }: Props) => {
                     </TouchableOpacity>
         );
     };
-    const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
-    const [starredPosts, setStarredPosts] = useState<Record<number, boolean>>({});
 
     // Toggle Like
-    const toggleLike = (id: number) => {
-        setLikedPosts((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+    const toggleLike = async (isLiked : boolean, id: string) => {
+        if(isLiked){
+            await removeLikeFromPost(id);
+        }
+        else{
+            await likePost(id);
+        }
     };
 
-    // Toggle Star
-    const toggleStar = (id: number) => {
-        setStarredPosts((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+    const toggleStar = async (id: number, postId: string) => {
+        try {
+            // Find the post and create updated version
+            const postToUpdate = Postings.find(post => post.docID === postId);
+            if (!postToUpdate) return;
+    
+            const updatedPost = {
+                ...postToUpdate,
+                isFavourite: !postToUpdate.isFavourite
+            };
+            
+            // Update Firebase
+            await setPostAsFavourite(postId);
+    
+            // Update parent component state
+            onUpdatePost?.(updatedPost);
+            
+        } catch (error) {
+            console.error("Error updating favorite status:", error);
+            // Optionally show an error message to the user
+        }
     };
 
     return (
@@ -139,6 +163,16 @@ const styles = StyleSheet.create({
         height : '80%',
         alignItems : 'center',
         justifyContent : 'center',
+    },
+    likeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    likeCount: {
+        fontFamily: 'manro-sb',
+        fontSize: 14,
+        color: 'black',
+        marginLeft: 8,
     },
     descContainer : {
         padding : 5,
