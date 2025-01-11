@@ -7,6 +7,9 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import  Animated, { FadeInRight, FadeOutLeft }  from 'react-native-reanimated';
 import { setPostAsFavourite } from '@/helpers/hSetFavouritePosts';
+import { likePost, removeLikeFromPost } from '@/helpers/hLikeUnlikePosts';
+
+
 export interface PostInf {
     id: number;
     title: string;
@@ -16,7 +19,9 @@ export interface PostInf {
     desc: string;
     tags: string[];
     docID : string;
-    isFavourite : boolean
+    isFavourite : boolean;
+    isLiked : boolean;
+    noOfLikes : number
 }
 
 interface Props {
@@ -26,6 +31,7 @@ interface Props {
 }
 
 const router = useRouter();
+
 
 const Posts = ({ Postings, community, onUpdatePost }: Props) => {
     const [loading, setLoading] = useState(false);
@@ -50,8 +56,6 @@ const Posts = ({ Postings, community, onUpdatePost }: Props) => {
         const truncatedDescription = item.desc.length > maxLength 
             ? `${item.desc.substring(0, maxLength)}...` 
             : item.desc;
-        const isLiked = likedPosts[item.id] || false;
-        const isStarred = starredPosts[item.id] || false;
         return (
                     <TouchableOpacity onPress={() => router.push(`/Post/${item.id}`)}>
                         <Animated.View style={styles.row} entering={FadeInRight} exiting={FadeOutLeft}>
@@ -68,15 +72,18 @@ const Posts = ({ Postings, community, onUpdatePost }: Props) => {
                                             {tag}
                                         </Text>
                                     ))}
-                                </View>
+                            </View>
                             <View style = {styles.bottomContainer}>
-                                <TouchableOpacity onPress={() => toggleLike(item.id)}>
-                                <MaterialCommunityIcons
-                                    name={isLiked ? 'thumb-up' : 'thumb-up-outline'}
-                                    size={18}
-                                    color={isLiked ? 'black' : 'gray'}
-                                />
-                                </TouchableOpacity>
+                                <View style={styles.likeContainer}>
+                                    <TouchableOpacity onPress={() => toggleLike(item.isLiked,item.docID)}>
+                                        <MaterialCommunityIcons
+                                            name={item.isLiked ? 'thumb-up' : 'thumb-up-outline'}
+                                            size={18}
+                                            color={item.isLiked ? 'black' : 'gray'}
+                                        />
+                                    </TouchableOpacity>
+                                    <Text style={styles.likeCount}>{item.numberOfLikes}</Text>
+                                </View>
                                 <TouchableOpacity onPress={() => console.log('Comments clicked')}>
                                     <FontAwesome name="comments-o" size={18} color="black" />
                                 </TouchableOpacity>
@@ -92,15 +99,15 @@ const Posts = ({ Postings, community, onUpdatePost }: Props) => {
                     </TouchableOpacity>
         );
     };
-    const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
-    const [starredPosts, setStarredPosts] = useState<Record<number, boolean>>({});
 
     // Toggle Like
-    const toggleLike = (id: number) => {
-        setLikedPosts((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+    const toggleLike = async (isLiked : boolean, id: string) => {
+        if(isLiked){
+            await removeLikeFromPost(id);
+        }
+        else{
+            await likePost(id);
+        }
     };
 
     const toggleStar = async (id: number, postId: string) => {
@@ -156,6 +163,16 @@ const styles = StyleSheet.create({
         height : '80%',
         alignItems : 'center',
         justifyContent : 'center',
+    },
+    likeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    likeCount: {
+        fontFamily: 'manro-sb',
+        fontSize: 14,
+        color: 'black',
+        marginLeft: 8,
     },
     descContainer : {
         padding : 5,

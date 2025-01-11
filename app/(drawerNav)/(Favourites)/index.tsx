@@ -8,11 +8,38 @@ import { hGetFavouritePostsData } from '@/helpers/hGetFavouritePostsData'
 import { query, collection, onSnapshot, documentId, getDocs, where }
 from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { fetchPostsByCommunities } from '@/helpers/hGetUsersPosts';
 const FavouritesPage = () => {
   const [posts, setPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredPosts, setFilteredPosts] = useState([]);
   // Function to update a single post's data
+
+  
+  const fetchLikedPostsByUsers = async () => {
+    try {
+      const auth = getAuth();
+      const currUser = auth.currentUser;
+      
+      if (!currUser) {
+        throw new Error("No authenticated user found");
+      }
+
+      const refToGetLikedPosts = collection(db, "likes");
+      const queryToGetLikedPosts = query(
+        refToGetLikedPosts,
+        where("userid", "==", currUser.uid)
+      );
+      const likedPostsSnapshot = await getDocs(queryToGetLikedPosts);
+      console.log(currUser.uid);
+      return likedPostsSnapshot.docs.map(doc => {
+        return doc.data().postid;
+      });
+    } catch (error) {
+      console.error("Error fetching liked posts:", error);
+      throw error;
+    }
+  };
 
   const handleSearch = (text : any) => {
     setSearchQuery(text);
@@ -76,12 +103,13 @@ typeof id === 'string' && id.length > 0);
         const favPostsDataQuery = query(postsRef, where(documentId(),
 "in", validFavorites));
         const favPostsData = await getDocs(favPostsDataQuery);
-
+        const likedPostsList = await fetchLikedPostsByUsers();
         const favorites = favPostsData.docs.map(doc => ({
           ...doc.data(),
           id: doc.id,
           docID: doc.id,
           isFavourite: true,
+          isLiked : likedPostsList?.includes(doc.id)
         }));
 
         setPosts(favorites);
@@ -93,6 +121,34 @@ typeof id === 'string' && id.length > 0);
 
     return () => unsubscribe();
   }, []);
+  
+  useEffect(() => {
+    const query = collection(db,"likes");
+
+    const unsubscribe = onSnapshot(query, async (querySnapshot) => {
+      try{
+        const postsData = await fetchPostsByCommunities();
+        const favoritePostsOnly = postsData?.filter(post => post.isFavourite === true);
+        setPosts(favoritePostsOnly);
+
+        if (searchQuery.trim() === '') {
+          setFilteredPosts(favoritePostsOnly);
+        } else {
+          const filtered = favoritePostsOnly.filter((post : any) =>
+            post.title.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          setFilteredPosts(filtered);
+        }
+      }
+      catch(e){
+        console.log(e);
+      }
+    }) 
+    return () => unsubscribe();
+  },[])
+
+
+
   return (
     <View style={{ flex: 1, backgroundColor : '#ffffff' }}>
       <View style = {styles.searchContainer}>
