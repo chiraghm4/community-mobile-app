@@ -37,7 +37,6 @@ function RootLayoutNav() {
       headerShown: false
     }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="Post/[id]" options={{headerTitle : '', headerTransparent : true}}/>
     </Stack>
   )
 }

@@ -8,11 +8,11 @@ const WelcomePage = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(setUser);
+    const unsubscribe = auth.onAuthStateChanged((user) => setUser(user));
     return unsubscribe;
   }, []);
 
-  if (user) return router.replace("/(tabs)/(posts)");
+  if (user) return router.replace("/(drawerNav)/(tabs)/(posts)");
 
   return (
     <View style={styleSheet.container}>

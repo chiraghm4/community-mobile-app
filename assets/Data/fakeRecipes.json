@@ -2,13 +2,13 @@
     "fakeRecipes": [
         {
             "id": 1,
-            "title": "aand bhaat",
-            "desc": "aand + bhaat"
+            "title": "recipe 1",
+            "desc": "new recipe desc, add ingredient 1 & 2"
         },
         {
             "id": 2,
-            "title": "lauda pav",
-            "desc": "lauda + pav"
+            "title": "recipe 2",
+            "desc": "demo desc for recipe 2 - todo steps for recipe, numbering works                "
         }
     ]
 }
