@@ -1,10 +1,13 @@
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import Animated from 'react-native-reanimated';
 import { PostInf } from '@/components/Posts';
 import { db } from '@/firestore';
 import { collection,getDocs, query, where } from 'firebase/firestore';
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { likePost, removeLikeFromPost } from '@/helpers/hLikeUnlikePosts';
+import { getAuth } from "firebase/auth";
 
 const PostItem = () => {
   const { id } = useLocalSearchParams<{id : string}>();
@@ -20,7 +23,29 @@ const PostItem = () => {
   
         if (!postSnapshot.empty) {
           const post = postSnapshot.docs[0];
-          return { id: id, ...post.data() };
+          const postData = { id: id, ...post.data() };
+    
+          // Check if post is liked by current user
+          const auth = getAuth();
+          const currUser = auth.currentUser;
+          
+          const likesRef = collection(db, "likes");
+          const likedPostQuery = query(
+            likesRef, 
+            where("userid", "==", currUser?.uid),
+            where("postid", "==", id)
+          );
+          const likedPostSnapshot = await getDocs(likedPostQuery);
+    
+          // Count total likes for this post
+          const allLikesQuery = query(likesRef, where("postid", "==", id));
+          const allLikesSnapshot = await getDocs(allLikesQuery);
+    
+          return {
+            ...postData,
+            isLiked: !likedPostSnapshot.empty,
+            numberOfLikes: allLikesSnapshot.size
+          };
         } else {
           console.log("No Matching Post Found");
           return null;
@@ -44,6 +69,26 @@ const PostItem = () => {
   
     getAndSetPost();
   },[id])
+
+  const toggleLike = async (isLiked : boolean, id: string) => {
+    if(isLiked){
+        await removeLikeFromPost(id);
+        setPost(prevPost => ({
+          ...prevPost,
+          isLiked: false,
+          numberOfLikes: (prevPost?.numberOfLikes || 1) - 1
+        }));
+    }
+    else{
+        await likePost(id);
+        setPost(prevPost => ({
+          ...prevPost,
+          isLiked: true,
+          numberOfLikes: (prevPost?.numberOfLikes || 0) + 1
+        }));
+    }
+  };  
+
 
   if (loading) {
     return <ActivityIndicator size="large" />;
@@ -76,6 +121,25 @@ const PostItem = () => {
           <Text style = {styles.Description}>{post?.desc}</Text>
         </Animated.View>
       </Animated.ScrollView >
+      <View style={styles.bottomContainer}>
+            <View style={styles.likeContainer}>
+              <TouchableOpacity style={styles.likeButton} onPress={() => toggleLike(post?.isLiked,post?.id)}>
+                    <MaterialCommunityIcons
+                        name={post?.isLiked ? 'thumb-up' : 'thumb-up-outline'}
+                        size={20}
+                        color={post?.isLiked ? 'black' : 'gray'}
+                    />
+                    <Text style={styles.likeCount}>
+                      {post?.numberOfLikes}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            <View style={styles.commentContainer}>
+              <TouchableOpacity onPress={() => console.log('Comments clicked')}>
+                  <FontAwesome name="comments-o" size={20} color="black" />
+              </TouchableOpacity>
+            </View>
+      </View>
     </View>
   )
 }
@@ -131,21 +195,53 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: 'row', 
-    flexWrap: 'nowrap',     
+    flexWrap: 'wrap',     
     overflow: 'hidden',     
     marginTop: 10,
-    alignSelf : 'center'
-},
-tag: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginRight: 10,
-    marginBottom: 10,
-    borderRadius: 12,         
-    fontSize: 16,
-    color: '#555',            
-},
+    alignSelf : 'center',
+    justifyContent: 'center',
+  },
+  tag: {
+      backgroundColor: '#f0f0f0',
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      marginRight: 10,
+      marginBottom: 10,
+      borderRadius: 12,         
+      fontSize: 16,
+      color: '#555',            
+  },
+  bottomContainer : {
+    width : '100%',
+    height : '8%',
+    //backgroundColor : 'red',
+    flexDirection : 'row',
+    fontFamily : 'manro',
+    fontSize : 16,
+    fontWeight : 600,
+    borderTopColor : '#f0f0f0',
+    borderTopWidth : 2,
+  },
+  likeContainer : {
+    width : '50%',
+    alignItems : 'center',
+    justifyContent : 'center',
+    flexDirection : 'row',
+    //backgroundColor : 'green',
+    borderRightColor : '#f0f0f0',
+    borderRightWidth : 2,
+  },
+  commentContainer : {
+    width : '50%',
+    alignItems : 'center',
+    justifyContent : 'center'
+    //backgroundColor : 'blue',
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  }
 });
 
 export default PostItem
