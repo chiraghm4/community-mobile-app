@@ -28,7 +28,7 @@ interface Props {
   // onUpdatePost?: (updatedPost: PostInf) => void;  // Add this
 }
 
-const router = useRouter();
+// const router = useRouter();
 
 const RecipeCard = ({ Postings }: Props) => {
   const postsRef = useRef<FlatList>(null);

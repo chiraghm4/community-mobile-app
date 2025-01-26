@@ -1,23 +1,31 @@
 import { View, Text, Button, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
-import { getAuth } from "@firebase/auth";
+import { getAuth, User } from "@firebase/auth";
 import { router } from "expo-router";
 
 const WelcomePage = () => {
-  const [user, setUser] = useState(null);
-  const auth = getAuth();
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => setUser(user));
     return unsubscribe;
   }, []);
+  const auth = getAuth();
 
-  if (user) return router.replace("/(drawerNav)/(tabs)/(posts)");
+  // if (user) {
+  //   router.replace("/(drawerNav)/(tabs)/(posts)");
+  // }
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/(drawerNav)/(tabs)/(posts)");
+    }
+  }, [user]); 
 
   return (
     <View style={styleSheet.container}>
       <Text>Welcome!!</Text>
-      <Text>You're not logged in.</Text>  
+      <Text>You're not logged in.</Text>
       <Button title="Sign In" onPress={() => router.replace("/(login)")} />
     </View>
   );

@@ -8,7 +8,7 @@ import CustomDrawerComponent from '@/components/customDrawer/CustomDrawerCompone
 
 const DrawerNavigation = () => {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    // <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer screenOptions={{drawerPosition : 'left',drawerHideStatusBarOnOpen:true}} drawerContent={CustomDrawerComponent}>
         <Drawer.Screen
           name="(tabs)"
@@ -41,7 +41,7 @@ const DrawerNavigation = () => {
           }}
         />
       </Drawer>
-    </GestureHandlerRootView>
+    // </GestureHandlerRootView>
   );
 };
 

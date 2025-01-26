@@ -30,10 +30,10 @@ interface Props {
     onUpdatePost?: (updatedPost: PostInf) => void;  // Add this
 }
 
-const router = useRouter();
 
 
 const Posts = ({ Postings, community, onUpdatePost }: Props) => {
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const postsRef = useRef<FlatList>(null);
 
