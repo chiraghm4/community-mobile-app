@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 import * as FileSystem from 'expo-file-system'
 import { getAuth } from "firebase/auth";
+import {decode} from 'base64-arraybuffer'
 
 const AddNewPage = () => {
   const [imageURI, setImageURI] = useState<string | null>(null);
@@ -32,7 +33,7 @@ const AddNewPage = () => {
       const base64 = await FileSystem.readAsStringAsync(img?.uri, {encoding: 'base64'})
       const filePath = `${currUser?.uid}/${new Date().getTime()}.${img?.type==='image'?'png':'mp4'}`
       const contentType = img?.type === 'image' ? 'image/png' : 'video/mp4'
-      const res = await supabase.storage.from('community-app-assets').upload(filePath, base64, {contentType})
+      const res = await supabase.storage.from('community-app-assets').upload(filePath, decode(base64), {contentType})
       console.log(res)
     } catch (e) {
       console.log(e, 'err caught in catch');
