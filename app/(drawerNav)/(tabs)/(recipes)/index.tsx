@@ -1,49 +1,118 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  // Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+} from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
-import { getAuth } from "firebase/auth";
-import Posts from "@/components/Posts";
-import AddNewForm from "@/components/Forms/AddNewForm";
-import { collection, getDocs, onSnapshot, query, QuerySnapshot, where } from "firebase/firestore";
-import { db } from "@/firestore";
-import { fetchPostsByCommunities } from '@/helpers/hGetUsersPosts'
+// import { getAuth } from "firebase/auth";
+// import Posts from "@/components/Posts";
+// import AddNewForm from "@/components/Forms/AddNewForm";
+// import {
+//   collection,
+//   getDocs,
+//   onSnapshot,
+//   query,
+//   QuerySnapshot,
+//   where,
+// } from "firebase/firestore";
+// import { db } from "@/firestore";
+import { fetchPostsByCommunities } from "@/helpers/hGetUsersPosts";
 import RecipeCard from "@/components/RecipesCard";
-import PostsData from '@/assets/Data/fakeRecipes.json'
-
+import { getRecipes } from "@/helpers/hGetRecipes";
+import { AntDesign, Feather } from "@expo/vector-icons";
 
 export default function RecipePage() {
+  const [recipes, setRecipes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredRecipes, setFilteredRecipes] = useState(recipes);
 
-  const posts = useMemo(() => PostsData.fakeRecipes, [])
-  
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const recipesData = await getRecipes();
+      setRecipes(recipesData);
+      setFilteredRecipes(recipesData);
+    };
+
+    fetchRecipes();
+  }, []);
+
+  const handleSearch = (text: any) => {
+    setSearchQuery(text);
+    if (text.trim() === "") {
+      setFilteredRecipes(recipes);
+    } else {
+      const filtered = recipes.filter((recipe) =>
+        recipe?.title.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredRecipes(filtered);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setFilteredRecipes(recipes);
+  };
+
   return (
-    <View>
-      <RecipeCard 
-        Postings={posts}
-        // community="abc"
-        // onUpdatePost={handleUpdatePost}
-      />
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <View style={styles.searchContainer}>
+        <Feather
+          name="search"
+          size={24}
+          color="gray"
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchField}
+          placeholder="Search recipes..."
+          value={searchQuery}
+          onChangeText={handleSearch}
+          clearButtonMode="never"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={clearSearch}
+            style={styles.clearIconContainer}
+          >
+            <AntDesign name="closecircle" size={20} color="gray" />
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={styles.container}>
+        <RecipeCard
+          Recipes={filteredRecipes}
+          // community="abc"
+          // onUpdatePost={handleUpdatePost}
+        />
+      </View>
     </View>
   );
 }
-
-const styleSheet = StyleSheet.create({
-  floatingButton: {
-    position: "absolute",
-    right: 30,
-    bottom: 30,
-    backgroundColor: "#e0e0e0",
-    paddingHorizontal: 24,
-    paddingVertical: 17,
-    borderRadius: 25,
+const styles = StyleSheet.create({
+  searchContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#bebebe",
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 4,
-    boxShadow: "inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff",
+    marginHorizontal: 16,
+    marginVertical: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 25,
+    paddingHorizontal: 6,
+    height: 50,
   },
-  buttonText: {
-    fontWeight: "bold",
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchField: {
+    flex: 1,
+    fontSize: 16,
+    color: "black",
+  },
+  clearIconContainer: {
+    marginLeft: 10,
+  },
+  container: {
+    flex: 1,
   },
 });

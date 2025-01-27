@@ -1,0 +1,28 @@
+{
+    "fakeRestaurant": [
+        {
+            "id": 1,
+            "restaurantName": "a1 chinese",
+            "location": "pune me kahi to",
+            "rating": 4
+        },
+        {
+            "id": 2,
+            "restaurantName": "samarth vadewale",
+            "location": "mahalunge vtp chya samor",
+            "rating": 3.5
+        },
+        {
+            "id": 3,
+            "restaurantName": "a2 chinese",
+            "location": "earth par kahi to",
+            "rating": 3.5
+        },
+        {
+            "id": 2,
+            "restaurantName": "rohit vadewale",
+            "location": "vtp belair iconic tvs chya samor mahalunge pune maharashtra india earht milkyway universe",
+            "rating": 2
+        }
+    ]
+}

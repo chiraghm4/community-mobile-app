@@ -23,14 +23,14 @@ export interface RecipeInf {
 }
 
 interface Props {
-  Postings: RecipeInf[];
+  Recipes: RecipeInf[];
   // community: string;
   // onUpdatePost?: (updatedPost: PostInf) => void;  // Add this
 }
 
 // const router = useRouter();
 
-const RecipeCard = ({ Postings }: Props) => {
+const RecipeCard = ({ Recipes }: Props) => {
   const postsRef = useRef<FlatList>(null);
 
   //Custom Seperator component
@@ -59,12 +59,11 @@ const RecipeCard = ({ Postings }: Props) => {
         >
           <Text style={styles.titleTxt}>{item.title}</Text>
           <View style={styles.descContainer}>
-            <Text style={styles.description}>{truncatedDescription}</Text>
+            <Text style={styles.description}>{item.desc}</Text>
             {item.hasOwnProperty("image") ? (
               <Image source={{ uri: item?.image }} style={styles.sideImg} />
             ) : null}
           </View>
-            
         </Animated.View>
       </TouchableOpacity>
     );
@@ -76,7 +75,7 @@ const RecipeCard = ({ Postings }: Props) => {
         renderItem={renderRow}
         showsVerticalScrollIndicator={false}
         ref={postsRef}
-        data={Postings}
+        data={Recipes}
         keyExtractor={(item) => item.id.toString()}
         ItemSeparatorComponent={renderSeparator}
       />
