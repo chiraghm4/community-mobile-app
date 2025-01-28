@@ -1,13 +1,18 @@
-import { Button, Text, View } from "react-native";
+import { Button, Pressable, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 import { supabase } from "@/utils/supabase";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
-import * as FileSystem from 'expo-file-system'
 import { getAuth } from "firebase/auth";
 import {decode} from 'base64-arraybuffer'
+import { pushSupabaseURL2Firebase } from "@/helpers/hSupabaseImageHandler";
+import RNPickerSelect from 'react-native-picker-select'
+import { TextInput } from "react-native-gesture-handler";
 
 const AddNewPage = () => {
-  const [imageURI, setImageURI] = useState<string | null>(null);
+  const [image, setImage] = useState(null);
+  const [pickerValue, setPickerValue] = useState<string | null>("")
+  const [addTitle, setAddTitle] = useState<string | undefined>("")
+  const [addBody, setAddBody] = useState<string | undefined>("")
 
   const auth = getAuth()
   const currUser = auth.currentUser;
@@ -22,29 +27,34 @@ const AddNewPage = () => {
     });
 
     if (!result.canceled) {
-      setImageURI(result.assets[0].uri);
-      return result.assets[0]
+      setImage(result.assets[0]);
     }
   };
 
   const handleUpload = async () => {
-    try {
-      const img = await pickImage()
-      const base64 = await FileSystem.readAsStringAsync(img?.uri, {encoding: 'base64'})
-      const filePath = `${currUser?.uid}/${new Date().getTime()}.${img?.type==='image'?'png':'mp4'}`
-      const contentType = img?.type === 'image' ? 'image/png' : 'video/mp4'
-      const res = await supabase.storage.from('community-app-assets').upload(filePath, decode(base64), {contentType})
-      console.log(res)
-    } catch (e) {
-      console.log(e, 'err caught in catch');
-    }
-  };
+    await pushSupabaseURL2Firebase(addTitle, addBody, image, pickerValue)
+  }
+
 
   return (
-    <View>
-      <Text>Add new stuff here</Text>   
-      <Button title="Upload" onPress={() => handleUpload()} />
-    </View>
+    <SafeAreaView style={{paddingRight: 10, paddingLeft: 10, marginLeft: 15, marginRight: 15, marginVertical: 10}}>
+      <Text>Choose...</Text>   
+      <RNPickerSelect onValueChange={(value) => setPickerValue(value)} items={[
+        {label: "Post", value: "posts"},
+        {label: "Community", value: "communities"},
+        {label: "Recipe", value: "recipes"},
+        {label: "Restaurant", value: "restaurants"}
+      ]}/>
+
+      <TextInput placeholder="Title" value={addTitle} onChangeText={(text) => setAddTitle(text)} />
+      <TextInput placeholder="Body" value={addBody} onChangeText={(text) => setAddBody(text)} />
+
+      <TouchableOpacity onPress={() => pickImage()} style={{alignItems: "center", backgroundColor: "#f0f0f0", width: "50%", justifyContent: "center"}} ><Text>Upload image</Text></TouchableOpacity>
+
+      <Pressable onPress={() => handleUpload()}>
+        <Text>Submit</Text>
+      </Pressable>
+    </SafeAreaView>
   );
 };
 

@@ -20,6 +20,7 @@ export interface RecipeInf {
   id: number;
   title: string;
   desc: string;
+  imgURL: string
 }
 
 interface Props {
@@ -60,8 +61,8 @@ const RecipeCard = ({ Recipes }: Props) => {
           <Text style={styles.titleTxt}>{item.title}</Text>
           <View style={styles.descContainer}>
             <Text style={styles.description}>{item.desc}</Text>
-            {item.hasOwnProperty("image") ? (
-              <Image source={{ uri: item?.image }} style={styles.sideImg} />
+            {item.hasOwnProperty("imgURL") ? (
+              <Image source={{ uri: item?.imgURL }} style={styles.sideImg} />
             ) : null}
           </View>
         </Animated.View>
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   },
   sideImg: {
     width: "20%",
-    height: "80%",
+    height: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
