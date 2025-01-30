@@ -13,6 +13,8 @@ const PostItem = () => {
   const { id } = useLocalSearchParams<{id : string}>();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authorName, setAuthorName] = useState<string>("Deleted User");
+  const [authorPhoto, setAuthorPhoto] = useState<string>("https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y");
 
   useEffect(() => {
     const fetchPost = async (id: string) => {
@@ -24,7 +26,26 @@ const PostItem = () => {
         if (!postSnapshot.empty) {
           const post = postSnapshot.docs[0];
           const postData = { id: id, ...post.data() };
-    
+          if (postData?.userID) {
+            try {
+              const userRef = collection(db, "users");
+              const q = query(userRef, where("userId", "==", postData.userID));
+              const querySnapshot = await getDocs(q);
+              
+              if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                const profileUrl = userDoc.data().profileImage;
+                const userName = userDoc.data().username;
+                
+                // Only set values if they exist
+                if (userName) setAuthorName(userName);
+                if (profileUrl) setAuthorPhoto(profileUrl);
+              }
+            } catch (error) {
+              console.error("Error fetching user data:", error);
+              // Keep default values if user fetch fails
+            }
+          }
           // Check if post is liked by current user
           const auth = getAuth();
           const currUser = auth.currentUser;
@@ -36,7 +57,7 @@ const PostItem = () => {
             where("postid", "==", id)
           );
           const likedPostSnapshot = await getDocs(likedPostQuery);
-    
+          
           // Count total likes for this post
           const allLikesQuery = query(likesRef, where("postid", "==", id));
           const allLikesSnapshot = await getDocs(allLikesQuery);
@@ -91,157 +112,181 @@ const PostItem = () => {
 
 
   if (loading) {
-    return <ActivityIndicator size="large" />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0066CC" />
+      </View>
+    );
   }
   return (
-    <View style = {styles.container}>
-      <Animated.ScrollView>
-        <Animated.View style = {styles.authorDetails}>
-          <Animated.Image source={{uri : post?.image}} style = {styles.authorImage}></Animated.Image>
-        </Animated.View>
-        <Animated.Text style = {styles.Title}>{[post?.title]}</Animated.Text>
-        <Animated.View style={styles.separatorContainer}>
-          <View style={styles.separator} />
-        </Animated.View>
-        <Animated.Image source = {{uri : post?.image}} style = {styles.ImageStyle}/>
-        <Animated.View style={styles.separatorContainer}>
-          <View style={styles.separator} />
-        </Animated.View>
-        <View style={styles.tagsContainer}>
-                {post?.tags.map((tag, index) => (
-                    <Text key={index} style={styles.tag}>
-                        {tag}
-                    </Text>
-                ))}
+    <View style={styles.container}>
+      <Animated.ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <Text style={styles.title}>{post?.title}</Text>
+          <View style={styles.authorContainer}>
+            <Animated.Image 
+              source={{uri: authorPhoto}} 
+              style={styles.authorImage}
+            />
+            <Text style={styles.authorName}>{authorName}</Text>
+          </View>
         </View>
-        <Animated.View style={styles.separatorContainer}>
-          <View style={styles.separator} />
-        </Animated.View>
-        <Animated.View style = {styles.DescContainer}>
-          <Text style = {styles.Description}>{post?.desc}</Text>
-        </Animated.View>
-      </Animated.ScrollView >
-      <View style={styles.bottomContainer}>
-            <View style={styles.likeContainer}>
-              <TouchableOpacity style={styles.likeButton} onPress={() => toggleLike(post?.isLiked,post?.id)}>
-                    <MaterialCommunityIcons
-                        name={post?.isLiked ? 'thumb-up' : 'thumb-up-outline'}
-                        size={20}
-                        color={post?.isLiked ? 'black' : 'gray'}
-                    />
-                    <Text style={styles.likeCount}>
-                      {post?.numberOfLikes}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.commentContainer}>
-              <TouchableOpacity onPress={() => console.log('Comments clicked')}>
-                  <FontAwesome name="comments-o" size={20} color="black" />
-              </TouchableOpacity>
-            </View>
+
+        {/* Main Image */}
+        <View style={styles.imageContainer}>
+          <Animated.Image 
+            source={{uri: post?.imageURL}} 
+            style={styles.mainImage}
+          />
+        </View>
+
+        {/* Tags Section */}
+        <View style={styles.divider} />
+        <View style={styles.tagsContainer}>
+          {post?.tags.map((tag, index) => (
+            <Text key={index} style={styles.tag}>#{tag}</Text>
+          ))}
+        </View>
+        <View style={styles.divider} />
+
+        {/* Description */}
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.description}>{post?.desc}</Text>
+        </View>
+      </Animated.ScrollView>
+
+      {/* Bottom Actions */}
+      <View style={styles.bottomActions}>
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={() => toggleLike(post?.isLiked, post?.id)}
+        >
+          <MaterialCommunityIcons
+              name={post?.isLiked ? 'thumb-up' : 'thumb-up-outline'}
+              size={20}
+              color={post?.isLiked ? 'black' : 'gray'}
+          />
+          <Text style={styles.actionText}>{post?.numberOfLikes || 0}</Text>
+        </TouchableOpacity>
+
+        <View style={styles.actionDivider} />
+
+        <TouchableOpacity style={styles.actionButton}>
+          <FontAwesome name="comments-o" size={20} color="black" />
+          <Text style={styles.actionText}>Comment</Text>
+        </TouchableOpacity>
       </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  authorImage : {
-    height : '150%',
-    aspectRatio : 1,
-    borderRadius : 50,
-    resizeMode : 'cover',
-    marginLeft : '7%',
-  },
-  authorDetails : {
-    flexDirection : 'column',
-    paddingVertical : '5%',
-    height : '6%',
-  },
-  container : {
-    flex : 1,
-    flexDirection : 'column',
-    backgroundColor : "#FFFFFF",
-  },
-  ImageStyle : {
-    width : '90%',
-    height : 240,
-    resizeMode : 'contain',
-    alignSelf : 'center',
-  },
-  separatorContainer: {
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
-  separator: {
-    width: '60%', 
-    height: 2,   
-    backgroundColor: '#ddd', 
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  DescContainer : {
-    fontSize : 18,
-    fontWeight : 500, 
-    padding : '7%'
+  header: {
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
-  Description : {
-    fontFamily : 'manro',
-    fontSize : 16,
-    fontWeight : 600
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 16,
+    fontFamily: 'manro-b',
+    flexWrap : 'wrap'
   },
-  Title : {
-    fontFamily : 'manro-b',
-    paddingVertical : '5%',
-    paddingHorizontal : '7%',
-    fontSize : 22,
-  },
-  tagsContainer: {
-    flexDirection: 'row', 
-    flexWrap: 'wrap',     
-    overflow: 'hidden',     
-    marginTop: 10,
-    alignSelf : 'center',
-    justifyContent: 'center',
-  },
-  tag: {
-      backgroundColor: '#f0f0f0',
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      marginRight: 10,
-      marginBottom: 10,
-      borderRadius: 12,         
-      fontSize: 16,
-      color: '#555',            
-  },
-  bottomContainer : {
-    width : '100%',
-    height : '8%',
-    //backgroundColor : 'red',
-    flexDirection : 'row',
-    fontFamily : 'manro',
-    fontSize : 16,
-    fontWeight : 600,
-    borderTopColor : '#f0f0f0',
-    borderTopWidth : 2,
-  },
-  likeContainer : {
-    width : '50%',
-    alignItems : 'center',
-    justifyContent : 'center',
-    flexDirection : 'row',
-    //backgroundColor : 'green',
-    borderRightColor : '#f0f0f0',
-    borderRightWidth : 2,
-  },
-  commentContainer : {
-    width : '50%',
-    alignItems : 'center',
-    justifyContent : 'center'
-    //backgroundColor : 'blue',
-  },
-  likeButton: {
+  authorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5
-  }
+    marginTop: 8,
+  },
+  authorImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 12,
+  },
+  authorName: {
+    fontSize: 16,
+    color: '#666',
+    fontFamily: 'manro',
+  },
+  imageContainer: {
+    width: '100%',
+    height: 300,
+    backgroundColor: '#F8F8F8',
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E5E5',
+    marginVertical: 16,
+    marginHorizontal: 24,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  tag: {
+    backgroundColor: '#F0F0F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'manro',
+  },
+  descriptionContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
+    fontFamily: 'manro',
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1.2,
+    borderTopColor: '#e3e1e1',
+    height: 64,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  actionDivider: {
+    width: 1,
+    backgroundColor: '#F0F0F0',
+    height: '100%',
+  },
+  actionText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 4,
+    fontFamily: 'manro',
+  },
 });
 
 export default PostItem
