@@ -2,6 +2,8 @@ import {
   Button,
   Pressable,
   SafeAreaView,
+  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -99,120 +101,335 @@ const AddNewPage = () => {
   };
 
   return (
-    <SafeAreaView
-      style={{
-        paddingRight: 10,
-        paddingLeft: 10,
-        marginLeft: 15,
-        marginRight: 15,
-        marginVertical: 10,
-      }}
-    >
-      <Text>Choose...</Text>
-      <RNPickerSelect
-        onValueChange={(value) => setPickerValue(value)}
-        items={[
-          { label: "Post", value: "posts" },
-          { label: "Community", value: "communities" },
-          { label: "Recipe", value: "recipes" },
-          { label: "Restaurant", value: "restaurants" },
-        ]}
-      />
-      <SafeAreaView>
-        {pickerValue === "posts" ? (
+    // <SafeAreaView
+    //   style={{
+    //     paddingRight: 10,
+    //     paddingLeft: 10,
+    //     marginLeft: 15,
+    //     marginRight: 15,
+    //     marginVertical: 10,
+    //   }}
+    // >
+    //   <Text>Choose...</Text>
+    //   <RNPickerSelect
+    //     onValueChange={(value) => setPickerValue(value)}
+    //     items={[
+    //       { label: "Post", value: "posts" },
+    //       { label: "Community", value: "communities" },
+    //       { label: "Recipe", value: "recipes" },
+    //       { label: "Restaurant", value: "restaurants" },
+    //     ]}
+    //   />
+    //   <SafeAreaView>
+    //     {pickerValue === "posts" ? (
+    //       <>
+    //         <RNPickerSelect
+    //           onValueChange={(value) => setCommunityDropdown(value)}
+    //           items={communityDropdownItems}
+    //           placeholder= {{
+    //             label: "Choose a community",
+    //             value: null
+    //           }}
+    //         />
+    //         <TextInput
+    //           placeholder="Title"
+    //           value={postTitle}
+    //           onChangeText={(text) => setPostTitle(text)}
+    //           style={{ visibility: "false" }}
+    //         />
+    //         <TextInput
+    //           placeholder="Body"
+    //           value={postBody}
+    //           onChangeText={(text) => setPostBody(text)}
+    //         />
+    //         <TextInput
+    //           placeholder="Tags (Space seperated)"
+    //           value={postTags}
+    //           onChangeText={(text) => setPostTags(text)}
+    //         />
+    //       </>
+    //     ) : null}
+
+    //     {pickerValue === "recipes" ? (
+    //       <>
+    //         <TextInput
+    //           placeholder="Recipe Name"
+    //           value={recipeName}
+    //           onChangeText={(text) => setRecipeName(text)}
+    //         />
+    //         <TextInput
+    //           placeholder="Recipe Body"
+    //           value={recipeBody}
+    //           onChangeText={(text) => setRecipeBody(text)}
+    //         />
+    //       </>
+    //     ) : null}
+
+    //     {pickerValue === "restaurants" ? (
+    //       <>
+    //         <TextInput
+    //           placeholder="Recipe Name"
+    //           value={restaurantName}
+    //           onChangeText={(text) => setRestaurantName(text)}
+    //         />
+    //         <TextInput
+    //           placeholder="Recipe Address"
+    //           value={restaurantAddress}
+    //           onChangeText={(text) => setRestaurantAddress(text)}
+    //         />
+    //       </>
+    //     ) : null}
+
+    //     {pickerValue === "communities" ? (
+    //       <>
+    //         <TextInput
+    //           placeholder="Community Name"
+    //           value={communityName}
+    //           onChangeText={(text) => setCommunityName(text)}
+    //         />
+    //         <TextInput
+    //           placeholder="Community Description"
+    //           value={communityDesc}
+    //           onChangeText={(text) => setCommunityDesc(text)}
+    //         />
+    //       </>
+    //     ) : null}
+
+    //     {pickerValue !== "communities" && pickerValue != null ? (
+    //       <TouchableOpacity
+    //         onPress={() => pickImage()}
+    //         style={{
+    //           alignItems: "center",
+    //           backgroundColor: "#f0f0f0",
+    //           width: "50%",
+    //           justifyContent: "center",
+    //         }}
+    //       >
+    //         <Text>Upload image</Text>
+    //       </TouchableOpacity>
+    //     ) : null}
+    //   </SafeAreaView>
+
+    //   <Pressable onPress={() => handleUpload()}>
+    //     <Text>Submit</Text>
+    //   </Pressable>
+    // </SafeAreaView>
+
+    <SafeAreaView style={styles.container}>
+  <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.formContent}>
+      <Text style={styles.headerText}>Choose Category</Text>
+
+      <View style={styles.pickerWrapper}>
+        <RNPickerSelect
+          onValueChange={(value) => setPickerValue(value)}
+          items={[
+            { label: "Post", value: "posts" },
+            { label: "Community", value: "communities" },
+            { label: "Recipe", value: "recipes" },
+            { label: "Restaurant", value: "restaurants" },
+          ]}
+          style={pickerSelectStyles}
+          placeholder={{ label: "Select a category...", value: null }}
+        />
+      </View>
+
+      <View style={styles.formFields}>
+        {pickerValue === "posts" && (
           <>
-            <RNPickerSelect
-              onValueChange={(value) => setCommunityDropdown(value)}
-              items={communityDropdownItems}
-              placeholder= {{
-                label: "Choose a community",
-                value: null
-              }}
-            />
+            <View style={styles.pickerWrapper}>
+              <RNPickerSelect
+                onValueChange={(value) => setCommunityDropdown(value)}
+                items={communityDropdownItems}
+                placeholder={{ label: "Choose a community", value: null }}
+                style={pickerSelectStyles}
+              />
+            </View>
             <TextInput
               placeholder="Title"
               value={postTitle}
               onChangeText={(text) => setPostTitle(text)}
-              style={{ visibility: "false" }}
+              style={styles.input}
+              placeholderTextColor="#666"
             />
             <TextInput
               placeholder="Body"
               value={postBody}
               onChangeText={(text) => setPostBody(text)}
+              style={[styles.input, styles.bodyInput]}
+              multiline
+              placeholderTextColor="#666"
             />
             <TextInput
-              placeholder="Tags (Space seperated)"
+              placeholder="Tags (Space separated)"
               value={postTags}
               onChangeText={(text) => setPostTags(text)}
+              style={styles.input}
+              placeholderTextColor="#666"
             />
           </>
-        ) : null}
+        )}
 
-        {pickerValue === "recipes" ? (
+        {pickerValue === "recipes" && (
           <>
             <TextInput
               placeholder="Recipe Name"
               value={recipeName}
               onChangeText={(text) => setRecipeName(text)}
+              style={styles.input}
+              placeholderTextColor="#666"
             />
             <TextInput
               placeholder="Recipe Body"
               value={recipeBody}
               onChangeText={(text) => setRecipeBody(text)}
+              style={[styles.input, styles.bodyInput]}
+              multiline
+              placeholderTextColor="#666"
             />
           </>
-        ) : null}
+        )}
 
-        {pickerValue === "restaurants" ? (
+        {pickerValue === "restaurants" && (
           <>
             <TextInput
-              placeholder="Recipe Name"
+              placeholder="Restaurant Name"
               value={restaurantName}
               onChangeText={(text) => setRestaurantName(text)}
+              style={styles.input}
+              placeholderTextColor="#666"
             />
             <TextInput
-              placeholder="Recipe Address"
+              placeholder="Restaurant Address"
               value={restaurantAddress}
               onChangeText={(text) => setRestaurantAddress(text)}
+              style={[styles.input, styles.bodyInput]}
+              multiline
+              placeholderTextColor="#666"
             />
           </>
-        ) : null}
+        )}
 
-        {pickerValue === "communities" ? (
+        {pickerValue === "communities" && (
           <>
             <TextInput
               placeholder="Community Name"
               value={communityName}
               onChangeText={(text) => setCommunityName(text)}
+              style={styles.input}
+              placeholderTextColor="#666"
             />
             <TextInput
               placeholder="Community Description"
               value={communityDesc}
               onChangeText={(text) => setCommunityDesc(text)}
+              style={[styles.input, styles.bodyInput]}
+              multiline
+              placeholderTextColor="#666"
             />
           </>
-        ) : null}
+        )}
 
-        {pickerValue !== "communities" && pickerValue != null ? (
+        {pickerValue !== "communities" && pickerValue != null && (
           <TouchableOpacity
             onPress={() => pickImage()}
-            style={{
-              alignItems: "center",
-              backgroundColor: "#f0f0f0",
-              width: "50%",
-              justifyContent: "center",
-            }}
+            style={styles.uploadButton}
+            activeOpacity={0.7}
           >
-            <Text>Upload image</Text>
+            <Text style={styles.uploadButtonText}>Upload Image</Text>
           </TouchableOpacity>
-        ) : null}
-      </SafeAreaView>
+        )}
+      </View>
 
-      <Pressable onPress={() => handleUpload()}>
-        <Text>Submit</Text>
-      </Pressable>
-    </SafeAreaView>
+      <TouchableOpacity
+        onPress={() => handleUpload()}
+        style={styles.submitButton}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.submitButtonText}>Submit</Text>
+      </TouchableOpacity>
+    </View>
+  </ScrollView>
+</SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  formContent: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    color: '#333',
+  },
+  pickerWrapper: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  formFields: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 12,
+  },
+  bodyInput: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  uploadButton: {
+    backgroundColor: '#e0e0e0',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+    width: '50%',
+  },
+  uploadButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  submitButton: {
+    backgroundColor: '#007AFF',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    color: '#333',
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    color: '#333',
+  },
+});
 
 export default AddNewPage;
