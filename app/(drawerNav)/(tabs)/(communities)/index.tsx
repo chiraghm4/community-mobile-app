@@ -4,6 +4,8 @@ import { Feather, AntDesign } from "@expo/vector-icons";
 import CommunitiesComp from "@/components/Communities";
 import { getAllCommunities } from "@/helpers/hSubscribeToComm";
 import { getUserCommunities } from "@/helpers/hGetUsersPosts";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/firestore";
 
 const CommunitiesPage = () => {
   const [allCommunities, setAllCommunities] = useState([]);
@@ -11,19 +13,21 @@ const CommunitiesPage = () => {
   const [filteredCommunities, setFilteredCommunities] =
     useState(allCommunities);
 
-  useEffect(() => {
-    const fetchAllComms = async () => {
-      try {
-        const allCommsData = await getAllCommunities();
-
-        setAllCommunities(allCommsData);
-        setFilteredCommunities(allCommsData);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchAllComms();
-  }, []);
+    useEffect(() => {
+      const communitiesRef = collection(db, "communities"); // Reference Firestore collection
+    
+      const unsubscribe = onSnapshot(communitiesRef, (snapshot) => {
+        const updatedCommunities = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+    
+        setAllCommunities(updatedCommunities);
+        setFilteredCommunities(updatedCommunities);
+      });
+    
+      return () => unsubscribe(); // Cleanup listener on unmount
+    }, []);
 
   useEffect(() => {
     const getUserSubscribedComms = async () => {

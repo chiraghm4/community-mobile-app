@@ -32,3 +32,5 @@ export const useUser = () => {
   }
   return context;
 };
+
+export default UserProvider

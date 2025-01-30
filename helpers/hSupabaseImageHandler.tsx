@@ -74,7 +74,7 @@ export const pushSupabaseURL2Firebase = async (props) => {
         const upload2FirebaseRes = await addDoc(collection(db, "recipes"), {
           title: props.recipeName,
           desc: props.recipeBody,
-          imgURL: imagePublicURL.data.publicUrl,
+          imgURL
         });
         console.log(upload2FirebaseRes);
       } else if (props.pickerValue === "posts") {
@@ -84,14 +84,15 @@ export const pushSupabaseURL2Firebase = async (props) => {
           community: props.communityDropdown,
           tags: [],
           userID: currUser?.uid,
-          imageURL: imagePublicURL.data.publicUrl,
+          imageURL: imgURL
         });
         console.log(upload2FirebaseRes);
       } else if (props.pickerValue === "restaurants") {
         const upload2FirebaseRes = await addDoc(collection(db, "restaurants"), {
           restaurantName: props.restaurantName,
           address: props.restaurantAddress,
-          imgURL: imagePublicURL.data.publicUrl,
+          rating: props.rating,
+          imgURL
         });
         console.log(upload2FirebaseRes);
       } else {
@@ -119,7 +120,10 @@ export const pushSupabaseURL2Firebase = async (props) => {
         communities: arrayUnion(upload2FirebaseRes.id),
       });
     }
+
+    return {success: true}
   } catch (e) {
     console.log(e, "err caught in catch");
+    return {success: false, e}
   }
 };

@@ -1,27 +1,17 @@
 import {
   View,
-  // Text,
   TouchableOpacity,
   StyleSheet,
   TextInput,
 } from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
-// import { getAuth } from "firebase/auth";
-// import Posts from "@/components/Posts";
-// import AddNewForm from "@/components/Forms/AddNewForm";
-// import {
-//   collection,
-//   getDocs,
-//   onSnapshot,
-//   query,
-//   QuerySnapshot,
-//   where,
-// } from "firebase/firestore";
-// import { db } from "@/firestore";
-import { fetchPostsByCommunities } from "@/helpers/hGetUsersPosts";
+
 import RecipeCard from "@/components/RecipesCard";
 import { getRecipes } from "@/helpers/hGetRecipes";
 import { AntDesign, Feather } from "@expo/vector-icons";
+import {styles} from '@/app/styles/recipePageStyles'
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/firestore";
 
 export default function RecipePage() {
   const [recipes, setRecipes] = useState([]);
@@ -29,13 +19,18 @@ export default function RecipePage() {
   const [filteredRecipes, setFilteredRecipes] = useState(recipes);
 
   useEffect(() => {
-    const fetchRecipes = async () => {
-      const recipesData = await getRecipes();
-      setRecipes(recipesData);
-      setFilteredRecipes(recipesData);
-    };
+    const recipesRef = collection(db, "recipes"); // Reference to Firestore collection
 
-    fetchRecipes();
+    const unsubscribe = onSnapshot(recipesRef, (snapshot) => {
+      const updatedRecipes = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setRecipes(updatedRecipes);
+      setFilteredRecipes(updatedRecipes);
+    });
+
+    return () => unsubscribe(); // Clean up listener on unmount
   }, []);
 
   const handleSearch = (text: any) => {
@@ -83,36 +78,9 @@ export default function RecipePage() {
       <View style={styles.container}>
         <RecipeCard
           Recipes={filteredRecipes}
-          // community="abc"
-          // onUpdatePost={handleUpdatePost}
         />
       </View>
     </View>
   );
 }
-const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    marginVertical: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 25,
-    paddingHorizontal: 6,
-    height: 50,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchField: {
-    flex: 1,
-    fontSize: 16,
-    color: "black",
-  },
-  clearIconContainer: {
-    marginLeft: 10,
-  },
-  container: {
-    flex: 1,
-  },
-});
+

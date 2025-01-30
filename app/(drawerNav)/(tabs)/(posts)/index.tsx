@@ -74,40 +74,6 @@ export default function PostsPage() {
         community="abc"
         onUpdatePost={handleUpdatePost}
       />
-      <TouchableOpacity style={styleSheet.floatingButton}>
-        <Text style={styleSheet.buttonText} onPress={() => setShowModal(true)}>
-          + Post
-        </Text>
-        {showModal && (
-          <AddNewForm
-            showModal={showModal}
-            handleClose={() => setShowModal(false)}
-          />
-        )}
-      </TouchableOpacity>
     </View>
   );
 }
-
-const styleSheet = StyleSheet.create({
-  floatingButton: {
-    position: "absolute",
-    right: 30,
-    bottom: 30,
-    backgroundColor: "#e0e0e0",
-    paddingHorizontal: 24,
-    paddingVertical: 17,
-    borderRadius: 25,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#bebebe",
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 4,
-    boxShadow: "inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff",
-  },
-  buttonText: {
-    fontWeight: "bold",
-  },
-});

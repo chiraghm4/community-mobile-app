@@ -1,5 +1,7 @@
 import {
+  ActivityIndicator,
   Button,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -17,6 +19,8 @@ import { pushSupabaseURL2Firebase } from "@/helpers/hSupabaseImageHandler";
 import RNPickerSelect from "react-native-picker-select";
 import { TextInput } from "react-native-gesture-handler";
 import { getAllCommunities } from "@/helpers/hSubscribeToComm";
+import StarRating from "react-native-star-rating-widget";
+import styles, { pickerSelectStyles } from "@/app/styles/addNewPageStyles";
 
 const AddNewPage = () => {
   const [image, setImage] = useState(null);
@@ -37,17 +41,22 @@ const AddNewPage = () => {
   const [communityDesc, setCommunityDesc] = useState<string | undefined>("");
 
   const [communityDropdown, setCommunityDropdown] = useState("");
-  const [communityDropdownItems, setCommunityDropdownItems] = useState([])
+  const [communityDropdownItems, setCommunityDropdownItems] = useState([]);
+  const [rating, setRating] = useState(0);
+
+  const [modalVisible, setModalVisible] = useState(false); // Modal state
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleCommunityDropDownData = async () => {
       if (pickerValue === "posts") {
         const allData = await getAllCommunities();
-        const dropdownItems = allData.map(doc => ({
+        const dropdownItems = allData.map((doc) => ({
           label: doc?.title,
           value: doc.id,
-        }))
-        setCommunityDropdownItems(dropdownItems)
+        }));
+        setCommunityDropdownItems(dropdownItems);
       }
     };
     handleCommunityDropDownData();
@@ -67,369 +76,226 @@ const AddNewPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
+
   const handleUpload = async () => {
-    if (pickerValue === "posts")
-      await pushSupabaseURL2Firebase({
-        postTitle,
-        postBody,
-        communityDropdown,
-        image,
-        postTags,
-        pickerValue,
-      });
-    else if (pickerValue === "recipes")
-      await pushSupabaseURL2Firebase({
-        recipeName,
-        recipeBody,
-        image,
-        pickerValue,
-      });
-    else if (pickerValue === "restaurants")
-      await pushSupabaseURL2Firebase({
-        restaurantName,
-        restaurantAddress,
-        image,
-        pickerValue,
-      });
-    else if (pickerValue === "communities")
-      await pushSupabaseURL2Firebase({
-        communityName,
-        communityDesc,
-        pickerValue,
-      });
-    else return { error: "invalid choice" };
+    setLoading(true);
+    try {
+      let response;
+      if (pickerValue === "posts") {
+        response = await pushSupabaseURL2Firebase({
+          postTitle,
+          postBody,
+          communityDropdown,
+          image,
+          postTags,
+          pickerValue,
+        });
+      } else if (pickerValue === "recipes") {
+        response = await pushSupabaseURL2Firebase({
+          recipeName,
+          recipeBody,
+          image,
+          pickerValue,
+        });
+      } else if (pickerValue === "restaurants") {
+        response = await pushSupabaseURL2Firebase({
+          restaurantName,
+          restaurantAddress,
+          rating,
+          image,
+          pickerValue,
+        });
+      } else if (pickerValue === "communities") {
+        response = await pushSupabaseURL2Firebase({
+          communityName,
+          communityDesc,
+          pickerValue,
+        });
+      } else {
+        throw new Error("Invalid choice");
+      }
+
+      if (response) {
+        // Clear input fields
+        setLoading(false);
+        setImage(null);
+        setPostTitle("");
+        setPostBody("");
+        setPostTags("");
+        setRecipeName("");
+        setRecipeBody("");
+        setRestaurantName("");
+        setRestaurantAddress("");
+        setCommunityName("");
+        setCommunityDesc("");
+        setPickerValue(null);
+        setCommunityDropdown("");
+        setRating(0);
+
+        // Show success modal
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
   };
 
   return (
-    // <SafeAreaView
-    //   style={{
-    //     paddingRight: 10,
-    //     paddingLeft: 10,
-    //     marginLeft: 15,
-    //     marginRight: 15,
-    //     marginVertical: 10,
-    //   }}
-    // >
-    //   <Text>Choose...</Text>
-    //   <RNPickerSelect
-    //     onValueChange={(value) => setPickerValue(value)}
-    //     items={[
-    //       { label: "Post", value: "posts" },
-    //       { label: "Community", value: "communities" },
-    //       { label: "Recipe", value: "recipes" },
-    //       { label: "Restaurant", value: "restaurants" },
-    //     ]}
-    //   />
-    //   <SafeAreaView>
-    //     {pickerValue === "posts" ? (
-    //       <>
-    //         <RNPickerSelect
-    //           onValueChange={(value) => setCommunityDropdown(value)}
-    //           items={communityDropdownItems}
-    //           placeholder= {{
-    //             label: "Choose a community",
-    //             value: null
-    //           }}
-    //         />
-    //         <TextInput
-    //           placeholder="Title"
-    //           value={postTitle}
-    //           onChangeText={(text) => setPostTitle(text)}
-    //           style={{ visibility: "false" }}
-    //         />
-    //         <TextInput
-    //           placeholder="Body"
-    //           value={postBody}
-    //           onChangeText={(text) => setPostBody(text)}
-    //         />
-    //         <TextInput
-    //           placeholder="Tags (Space seperated)"
-    //           value={postTags}
-    //           onChangeText={(text) => setPostTags(text)}
-    //         />
-    //       </>
-    //     ) : null}
-
-    //     {pickerValue === "recipes" ? (
-    //       <>
-    //         <TextInput
-    //           placeholder="Recipe Name"
-    //           value={recipeName}
-    //           onChangeText={(text) => setRecipeName(text)}
-    //         />
-    //         <TextInput
-    //           placeholder="Recipe Body"
-    //           value={recipeBody}
-    //           onChangeText={(text) => setRecipeBody(text)}
-    //         />
-    //       </>
-    //     ) : null}
-
-    //     {pickerValue === "restaurants" ? (
-    //       <>
-    //         <TextInput
-    //           placeholder="Recipe Name"
-    //           value={restaurantName}
-    //           onChangeText={(text) => setRestaurantName(text)}
-    //         />
-    //         <TextInput
-    //           placeholder="Recipe Address"
-    //           value={restaurantAddress}
-    //           onChangeText={(text) => setRestaurantAddress(text)}
-    //         />
-    //       </>
-    //     ) : null}
-
-    //     {pickerValue === "communities" ? (
-    //       <>
-    //         <TextInput
-    //           placeholder="Community Name"
-    //           value={communityName}
-    //           onChangeText={(text) => setCommunityName(text)}
-    //         />
-    //         <TextInput
-    //           placeholder="Community Description"
-    //           value={communityDesc}
-    //           onChangeText={(text) => setCommunityDesc(text)}
-    //         />
-    //       </>
-    //     ) : null}
-
-    //     {pickerValue !== "communities" && pickerValue != null ? (
-    //       <TouchableOpacity
-    //         onPress={() => pickImage()}
-    //         style={{
-    //           alignItems: "center",
-    //           backgroundColor: "#f0f0f0",
-    //           width: "50%",
-    //           justifyContent: "center",
-    //         }}
-    //       >
-    //         <Text>Upload image</Text>
-    //       </TouchableOpacity>
-    //     ) : null}
-    //   </SafeAreaView>
-
-    //   <Pressable onPress={() => handleUpload()}>
-    //     <Text>Submit</Text>
-    //   </Pressable>
-    // </SafeAreaView>
-
     <SafeAreaView style={styles.container}>
-  <ScrollView showsVerticalScrollIndicator={false}>
-    <View style={styles.formContent}>
-      <Text style={styles.headerText}>Choose Category</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.formContent}>
+          <Text style={styles.headerText}>Choose Category</Text>
 
-      <View style={styles.pickerWrapper}>
-        <RNPickerSelect
-          onValueChange={(value) => setPickerValue(value)}
-          items={[
-            { label: "Post", value: "posts" },
-            { label: "Community", value: "communities" },
-            { label: "Recipe", value: "recipes" },
-            { label: "Restaurant", value: "restaurants" },
-          ]}
-          style={pickerSelectStyles}
-          placeholder={{ label: "Select a category...", value: null }}
-        />
-      </View>
+          <View style={styles.pickerWrapper}>
+            <RNPickerSelect
+              onValueChange={(value) => setPickerValue(value)}
+              items={[
+                { label: "Post", value: "posts" },
+                { label: "Community", value: "communities" },
+                { label: "Recipe", value: "recipes" },
+                { label: "Restaurant", value: "restaurants" },
+              ]}
+              style={pickerSelectStyles}
+              placeholder={{ label: "Select a category...", value: null }}
+            />
+          </View>
 
-      <View style={styles.formFields}>
-        {pickerValue === "posts" && (
-          <>
-            <View style={styles.pickerWrapper}>
-              <RNPickerSelect
-                onValueChange={(value) => setCommunityDropdown(value)}
-                items={communityDropdownItems}
-                placeholder={{ label: "Choose a community", value: null }}
-                style={pickerSelectStyles}
-              />
-            </View>
-            <TextInput
-              placeholder="Title"
-              value={postTitle}
-              onChangeText={(text) => setPostTitle(text)}
-              style={styles.input}
-              placeholderTextColor="#666"
-            />
-            <TextInput
-              placeholder="Body"
-              value={postBody}
-              onChangeText={(text) => setPostBody(text)}
-              style={[styles.input, styles.bodyInput]}
-              multiline
-              placeholderTextColor="#666"
-            />
-            <TextInput
-              placeholder="Tags (Space separated)"
-              value={postTags}
-              onChangeText={(text) => setPostTags(text)}
-              style={styles.input}
-              placeholderTextColor="#666"
-            />
-          </>
-        )}
+          <View style={styles.formFields}>
+            {pickerValue === "posts" && (
+              <>
+                <View style={styles.pickerWrapper}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setCommunityDropdown(value)}
+                    items={communityDropdownItems}
+                    placeholder={{ label: "Choose a community", value: null }}
+                    style={pickerSelectStyles}
+                  />
+                </View>
+                <TextInput
+                  placeholder="Title"
+                  value={postTitle}
+                  onChangeText={setPostTitle}
+                  style={styles.input}
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  placeholder="Body"
+                  value={postBody}
+                  onChangeText={setPostBody}
+                  style={[styles.input, styles.bodyInput]}
+                  multiline
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  placeholder="Tags (Space separated)"
+                  value={postTags}
+                  onChangeText={setPostTags}
+                  style={styles.input}
+                  placeholderTextColor="#666"
+                />
+              </>
+            )}
 
-        {pickerValue === "recipes" && (
-          <>
-            <TextInput
-              placeholder="Recipe Name"
-              value={recipeName}
-              onChangeText={(text) => setRecipeName(text)}
-              style={styles.input}
-              placeholderTextColor="#666"
-            />
-            <TextInput
-              placeholder="Recipe Body"
-              value={recipeBody}
-              onChangeText={(text) => setRecipeBody(text)}
-              style={[styles.input, styles.bodyInput]}
-              multiline
-              placeholderTextColor="#666"
-            />
-          </>
-        )}
+            {pickerValue === "recipes" && (
+              <>
+                <TextInput
+                  placeholder="Recipe Name"
+                  value={recipeName}
+                  onChangeText={setRecipeName}
+                  style={styles.input}
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  placeholder="Recipe Body"
+                  value={recipeBody}
+                  onChangeText={setRecipeBody}
+                  style={[styles.input, styles.bodyInput]}
+                  multiline
+                  placeholderTextColor="#666"
+                />
+              </>
+            )}
 
-        {pickerValue === "restaurants" && (
-          <>
-            <TextInput
-              placeholder="Restaurant Name"
-              value={restaurantName}
-              onChangeText={(text) => setRestaurantName(text)}
-              style={styles.input}
-              placeholderTextColor="#666"
-            />
-            <TextInput
-              placeholder="Restaurant Address"
-              value={restaurantAddress}
-              onChangeText={(text) => setRestaurantAddress(text)}
-              style={[styles.input, styles.bodyInput]}
-              multiline
-              placeholderTextColor="#666"
-            />
-          </>
-        )}
+            {pickerValue === "restaurants" && (
+              <>
+                <TextInput
+                  placeholder="Restaurant Name"
+                  value={restaurantName}
+                  onChangeText={setRestaurantName}
+                  style={styles.input}
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  placeholder="Restaurant Address"
+                  value={restaurantAddress}
+                  onChangeText={setRestaurantAddress}
+                  style={[styles.input, styles.bodyInput]}
+                  multiline
+                  placeholderTextColor="#666"
+                />
+                <StarRating rating={rating} onChange={setRating} />
+              </>
+            )}
 
-        {pickerValue === "communities" && (
-          <>
-            <TextInput
-              placeholder="Community Name"
-              value={communityName}
-              onChangeText={(text) => setCommunityName(text)}
-              style={styles.input}
-              placeholderTextColor="#666"
-            />
-            <TextInput
-              placeholder="Community Description"
-              value={communityDesc}
-              onChangeText={(text) => setCommunityDesc(text)}
-              style={[styles.input, styles.bodyInput]}
-              multiline
-              placeholderTextColor="#666"
-            />
-          </>
-        )}
+            {pickerValue === "communities" && (
+              <>
+                <TextInput
+                  placeholder="Community Name"
+                  value={communityName}
+                  onChangeText={setCommunityName}
+                  style={styles.input}
+                  placeholderTextColor="#666"
+                />
+                <TextInput
+                  placeholder="Community Description"
+                  value={communityDesc}
+                  onChangeText={setCommunityDesc}
+                  style={[styles.input, styles.bodyInput]}
+                  multiline
+                  placeholderTextColor="#666"
+                />
+              </>
+            )}
 
-        {pickerValue !== "communities" && pickerValue != null && (
+            {pickerValue !== "communities" && pickerValue != null && (
+              <TouchableOpacity
+                onPress={pickImage}
+                style={styles.uploadButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.uploadButtonText}>Upload Image</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
           <TouchableOpacity
-            onPress={() => pickImage()}
-            style={styles.uploadButton}
+            onPress={handleUpload}
+            style={styles.submitButton}
             activeOpacity={0.7}
           >
-            <Text style={styles.uploadButtonText}>Upload Image</Text>
+            <Text style={styles.submitButtonText}>Submit</Text>
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      </ScrollView>
 
-      <TouchableOpacity
-        onPress={() => handleUpload()}
-        style={styles.submitButton}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
-    </View>
-  </ScrollView>
-</SafeAreaView>
+      {/* Success Modal */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text>Submission Successful!</Text>
+            <Button title="OK" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  formContent: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    color: '#333',
-  },
-  pickerWrapper: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  formFields: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 12,
-  },
-  bodyInput: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  uploadButton: {
-    backgroundColor: '#e0e0e0',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-    width: '50%',
-  },
-  uploadButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    color: '#333',
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    color: '#333',
-  },
-});
 
 export default AddNewPage;
