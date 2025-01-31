@@ -62,8 +62,8 @@ const fetchLikedPostsByUsers = async () => {
 
 const fetchPostsByCommunities = async () => {
   try {
-    const auth = getAuth();
-    const currUser = auth.currentUser;
+    // const auth = getAuth();
+    // const currUser = auth.currentUser;
     const {subscribedComms} = await getUserCommunities();
     const favPostsList = await GetFavouritePosts();
     const postsRef = collection(db, "posts");
