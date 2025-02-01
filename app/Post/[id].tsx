@@ -8,13 +8,28 @@ import { collection,getDocs, query, where } from 'firebase/firestore';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { likePost, removeLikeFromPost } from '@/helpers/hLikeUnlikePosts';
 import { getAuth } from "firebase/auth";
+import CommentsModal from '@/components/customModal/CommentsModal';
+
+
+interface PostParams {
+  id?: string;
+  openComments?: string;
+}
 
 const PostItem = () => {
-  const { id } = useLocalSearchParams<{id : string}>();
+  const params = useLocalSearchParams(); 
+  const { id, openComments } = params as { id?: string; openComments?: string };
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authorName, setAuthorName] = useState<string>("Deleted User");
   const [authorPhoto, setAuthorPhoto] = useState<string>("https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y");
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (openComments === "true") {
+      setIsModalVisible(true);
+    }
+  },[openComments])
 
   useEffect(() => {
     const fetchPost = async (id: string) => {
@@ -110,6 +125,9 @@ const PostItem = () => {
     }
   };  
 
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  }
 
   if (loading) {
     return (
@@ -134,13 +152,14 @@ const PostItem = () => {
         </View>
 
         {/* Main Image */}
+        {post?.imageURL && (
         <View style={styles.imageContainer}>
           <Animated.Image 
-            source={{uri: post?.imageURL}} 
+            source={{ uri: post?.imageURL }} 
             style={styles.mainImage}
           />
         </View>
-
+        )}
         {/* Tags Section */}
         <View style={styles.divider} />
         <View style={styles.tagsContainer}>
@@ -172,11 +191,17 @@ const PostItem = () => {
 
         <View style={styles.actionDivider} />
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity onPress={toggleModal} style={styles.actionButton}>
           <FontAwesome name="comments-o" size={20} color="black" />
           <Text style={styles.actionText}>Comment</Text>
         </TouchableOpacity>
       </View>
+
+      <CommentsModal 
+        isVisible={isModalVisible}
+        postId={post?.id}
+        onClose={toggleModal}
+      />
     </View>
   )
 }
@@ -225,12 +250,15 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: 300,
-    backgroundColor: '#F8F8F8',
+    backgroundColor : '#fffff',
+    paddingTop : 12,
   },
   mainImage: {
-    width: '100%',
+    width: '90%',
     height: '100%',
     resizeMode: 'cover',
+    alignSelf : 'center',
+    borderRadius : 10,
   },
   divider: {
     height: 1,
@@ -254,8 +282,8 @@ const styles = StyleSheet.create({
     fontFamily: 'manro',
   },
   descriptionContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   description: {
     fontSize: 16,

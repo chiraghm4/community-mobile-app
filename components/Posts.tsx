@@ -100,7 +100,13 @@ const Posts = ({ Postings, community, onUpdatePost }: Props) => {
               </TouchableOpacity>
               <Text style={styles.likeCount}>{item.numberOfLikes}</Text>
             </View>
-            <TouchableOpacity onPress={() => console.log("Comments clicked")}>
+            <TouchableOpacity onPress={() => {
+                router.push({
+                    pathname : `/Post/${item.id}`,
+                    params : {
+                        openComments : "true"},
+                });
+            }}>
               <FontAwesome name="comments-o" size={18} color="black" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => toggleStar(item.id, item.docID)}>
@@ -173,7 +179,7 @@ const styles = StyleSheet.create({
   },
   sideImg: {
     width: "20%",
-    height: "80%",
+    height: "60%",
     alignItems: "center",
     justifyContent: "center",
     resizeMode : "cover",
