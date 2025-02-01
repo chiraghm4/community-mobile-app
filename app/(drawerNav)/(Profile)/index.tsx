@@ -17,6 +17,7 @@ const ProfilePage = () => {
   const [email, changeEmail] = useState('Email');
   const [image, setImage] = useState("https://cdn-images-1.medium.com/max/1024/1*xYYZwY2MNMUUMv6nvZOooA.png");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [previousUsername, setPreviousUsername] = useState("");
 
   useEffect(() => { 
     const getData = async () => {
@@ -41,25 +42,26 @@ const ProfilePage = () => {
     getData();
   },[]);
 
-  const updateUsername = async (newUsername: string) => {
-    // Don't allow empty username
+  const updateUsername = async (newUsername: string, previousUsername : string) => {
+
     if (!newUsername || newUsername.trim() === '') {
       Alert.alert('Error', 'Username cannot be empty');
+      setUsername(previousUsername);
       return;
     }
-  
-    // Add basic validation
+
     if (newUsername.length < 3) {
       Alert.alert('Error', 'Username must be at least 3 characters long');
+      setUsername(previousUsername);
       return;
     }
-  
-    // Check for special characters
+
     if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
       Alert.alert('Error', 'Username can only contain letters, numbers, and underscores');
+      setUsername(previousUsername);
       return;
     }
-  
+    
     try {
       const auth = getAuth();
       const currUser = auth.currentUser;
@@ -84,6 +86,7 @@ const ProfilePage = () => {
       const duplicateSnapshot = await getDocs(duplicateCheck);
       if (!duplicateSnapshot.empty) {
         Alert.alert('Error', 'This username is already taken');
+        setUsername(previousUsername);
         return;
       }
   
@@ -94,6 +97,7 @@ const ProfilePage = () => {
       Alert.alert('Success', 'Username updated successfully');
     } catch(e) {
       console.log("Error updating username:", e);
+      setUsername(previousUsername);
       Alert.alert(
         "Error",
         "Failed to update username. Please try again later.",
@@ -231,12 +235,13 @@ const ProfilePage = () => {
   };
 
   const toggleUsernameEdit = async () => {
+    setPreviousUsername(username);
     if (isEditingUsername) {
       if (isUpdating) return; // Prevent multiple clicks
       
       setIsUpdating(true);
       try {
-        await updateUsername(username);
+        await updateUsername(username,previousUsername);
         setIsEditingUsername(false);
       } catch (error) {
         Alert.alert(

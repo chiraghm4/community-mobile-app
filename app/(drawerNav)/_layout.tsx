@@ -14,7 +14,7 @@ const DrawerNavigation = () => {
           name="(tabs)"
           options={{
             drawerLabel: 'Home',
-            headerTitle : 'Posts',
+            headerTitle : 'Healthify',
             drawerIcon: ({size, color}) => (
               <Feather name='home' size={16} color={color} />
             ),

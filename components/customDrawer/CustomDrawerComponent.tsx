@@ -8,17 +8,28 @@ import { getAuth } from 'firebase/auth'
 import {getUserCommunities} from '@/helpers/hGetUsersPosts'
 import {signMeOut} from '@/helpers/hSignout' 
 import { db } from "@/firestore";
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, onSnapshot, query, where } from 'firebase/firestore'
 
 
 const CustomDrawerComponent = (props:any) => {
-  const router = useRouter();
   const {top, bottom} = useSafeAreaInsets();
   const [profileImage, setProfileImage] = useState("");
+  const [username, setUsername] = useState("");
   const auth = getAuth()
   const currUser = auth.currentUser
-
-  const [username, setUsername] = useState("")
+  const userRef = collection(db, "users");
+  const q = query(userRef, where("userId", "==", currUser.uid));
+  useEffect(() => {
+    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      const updatedUsername = querySnapshot.docs[0]?.data()?.username;
+      const updatedProfileUrl = querySnapshot.docs[0]?.data()?.profileImage;
+      setProfileImage(updatedProfileUrl);
+      setUsername(updatedUsername);
+    })
+    return () => unsubscribe();
+  },[profileImage,username])
+  
+  
   useEffect(() => {
     const getUserData = async () => {
         const auth = getAuth();

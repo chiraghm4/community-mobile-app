@@ -87,7 +87,7 @@ export default function CommentsModal({ isVisible, postId, onClose }: Props) {
       });
       
       setNewComment('');
-      fetchComments(); // Refresh comments
+      fetchComments(); 
     } catch (error) {
       console.error("Error adding comment:", error);
     } finally {
