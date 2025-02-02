@@ -1,23 +1,23 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Modal, View, Text, Pressable, StyleSheet, TextInput, ActivityIndicator, FlatList } from 'react-native';
+import { Modal, View, Text, Pressable, StyleSheet, TextInput, ActivityIndicator, FlatList, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/firestore';
 import { getAuth } from 'firebase/auth';
 
 type Comment = {
-  id: string;
-  userId: string;
-  postId: string;
-  comment: string;
-  timestamp: any;
-  username?: string;
+    id: string;
+    userId: string;
+    postId: string;
+    comment: string;
+    timestamp: any;
+    username: string;
 }
 
 type Props = {
-  isVisible: boolean;
-  onClose: () => void;
-  postId: string;
+    isVisible: boolean;
+    onClose: () => void;
+    postId: string;
 };
 
 export default function CommentsModal({ isVisible, postId, onClose }: Props) {
@@ -41,29 +41,14 @@ export default function CommentsModal({ isVisible, postId, onClose }: Props) {
       );
       
       const querySnapshot = await getDocs(q);
-      const commentsData: Comment[] = [];
-      
-      for (const doc of querySnapshot.docs) {
-        const commentData = { id: doc.id, ...doc.data() } as Comment;
-        
-        // Fetch username for each comment
-        try {
-          const userRef = collection(db, "users");
-          const userQuery = query(userRef, where("userId", "==", commentData.userId));
-          const userSnapshot = await getDocs(userQuery);
-          
-          if (!userSnapshot.empty) {
-            commentData.username = userSnapshot.docs[0].data().username;
-          } else {
-            commentData.username = "Unknown User";
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-          commentData.username = "Unknown User";
-        }
-        
-        commentsData.push(commentData);
-      }
+      const commentsData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          username: data.username || "Anonymous User"
+        } as Comment;
+      });
       
       setComments(commentsData);
     } catch (error) {
@@ -78,12 +63,18 @@ export default function CommentsModal({ isVisible, postId, onClose }: Props) {
     
     try {
       setSubmitting(true);
+      const userRef = collection(db, "users");
+      const userQuery = query(userRef, where("userId", "==", auth.currentUser.uid));
+      const userSnapshot = await getDocs(userQuery);
+      const username = userSnapshot.empty ? "Unknown User" : userSnapshot.docs[0].data().username;
+
       const commentsRef = collection(db, "comments");
       await addDoc(commentsRef, {
         userId: auth.currentUser.uid,
         postId: postId,
         comment: newComment.trim(),
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
+        username
       });
       
       setNewComment('');
@@ -95,80 +86,103 @@ export default function CommentsModal({ isVisible, postId, onClose }: Props) {
     }
   };
 
+  const handleDeleteComment = async (commentId: string, userId: string) => {
+    if (auth.currentUser?.uid !== userId) return;
+
+    try {
+      await deleteDoc(doc(db, "comments", commentId));
+      setComments(prev => prev.filter(comment => comment.id !== commentId));
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      Alert.alert("Error", "Failed to delete comment");
+    }
+  };
+
   const renderComment = ({ item }: { item: Comment }) => (
     <View style={styles.commentItem}>
-      <Text style={styles.username}>{item.username}</Text>
+      <View style={styles.commentHeader}>
+        <Text style={styles.username}>{item.username}</Text>
+        {auth.currentUser?.uid === item.userId && (
+          <Pressable 
+            onPress={() => handleDeleteComment(item.id, item.userId)}
+            style={({ pressed }) => pressed && { opacity: 0.7 }}
+          >
+            <MaterialIcons name="delete" size={20} color="#fff" />
+          </Pressable>
+        )}
+      </View>
       <Text style={styles.commentText}>{item.comment}</Text>
     </View>
   );
 
+
   return (
     <Modal 
-      animationType="slide" 
-      transparent={true} 
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.overlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Comments</Text>
-            <Pressable 
-              onPress={onClose}
-              style={({ pressed }) => [
-                styles.closeButton,
-                pressed && { opacity: 0.7 }
-              ]}
-            >
-              <MaterialIcons name="close" color="#00000" size={22} />
-            </Pressable>
+    animationType="slide" 
+    transparent={true} 
+    visible={isVisible}
+    onRequestClose={onClose}
+  >
+    <View style={styles.overlay}>
+      <View style={styles.modalContent}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Comments</Text>
+          <Pressable 
+            onPress={onClose}
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 }
+            ]}
+          >
+            <MaterialIcons name="close" color="#00000" size={22} />
+          </Pressable>
+        </View>
+        
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#00000" />
           </View>
-          
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#00000" />
-            </View>
-          ) : (
-            <FlatList
-              data={comments}
-              renderItem={renderComment}
-              keyExtractor={(item) => item.id}
-              style={styles.commentsList}
-              contentContainerStyle={styles.commentsListContent}
-              ListEmptyComponent={
-                <Text style={styles.noComments}>No comments to display</Text>
-              }
-            />
-          )}
-          
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Add a comment..."
-              placeholderTextColor="#999"
-              value={newComment}
-              onChangeText={setNewComment}
-              multiline
-            />
-            <Pressable 
-              onPress={handleAddComment}
-              disabled={submitting || !newComment.trim()}
-              style={({ pressed }) => [
-                styles.sendButton,
-                pressed && { opacity: 0.7 },
-                (!newComment.trim() || submitting) && { opacity: 0.5 }
-              ]}
-            >
-              {submitting ? (
-                <ActivityIndicator size="small" color="#00000" />
-              ) : (
-                <MaterialIcons name="send" size={24} color="#00000" />
-              )}
-            </Pressable>
-          </View>
+        ) : (
+          <FlatList
+            data={comments}
+            renderItem={renderComment}
+            keyExtractor={(item) => item.id}
+            style={styles.commentsList}
+            contentContainerStyle={styles.commentsListContent}
+            ListEmptyComponent={
+              <Text style={styles.noComments}>No comments to display</Text>
+            }
+          />
+        )}
+        
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Add a comment..."
+            placeholderTextColor="#999"
+            value={newComment}
+            onChangeText={setNewComment}
+            multiline
+          />
+          <Pressable 
+            onPress={handleAddComment}
+            disabled={submitting || !newComment.trim()}
+            style={({ pressed }) => [
+              styles.sendButton,
+              pressed && { opacity: 0.7 },
+              (!newComment.trim() || submitting) && { opacity: 0.5 }
+            ]}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" color="#00000" />
+            ) : (
+              <MaterialIcons name="send" size={24} color="#00000" />
+            )}
+          </Pressable>
         </View>
       </View>
-    </Modal>
+    </View>
+  </Modal>
   );
 }
 
@@ -256,4 +270,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingLeft : 12,
   },
+  commentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  }
 });

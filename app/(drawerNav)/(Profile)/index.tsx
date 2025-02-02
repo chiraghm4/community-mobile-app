@@ -16,6 +16,7 @@ const ProfilePage = () => {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [email, changeEmail] = useState('Email');
   const [image, setImage] = useState("https://cdn-images-1.medium.com/max/1024/1*xYYZwY2MNMUUMv6nvZOooA.png");
+  const [imagePath, setImagePath] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [previousUsername, setPreviousUsername] = useState("");
 
@@ -31,6 +32,8 @@ const ProfilePage = () => {
         const profileUrl = userDoc.data().profileImage;
         const userName = userDoc.data().username;
         const userEmail = userDoc.data().email;
+        const storedImagePath = userDoc.data().imagePath;
+        setImagePath(storedImagePath);
         setImage(profileUrl);
         setUsername(userName);
         changeEmail(userEmail);
@@ -153,80 +156,65 @@ const ProfilePage = () => {
         throw new Error("No image URI provided");
       }
 
-      const { data: existingFiles, error: listError } = await supabase.storage
-      .from("community-app-assets")
-      .list("SGZMEO6ZvHZtakXyLWNHpz4Mnxv1/profile_photo", {
-        limit: 100,
-        offset: 0
-      })
-      //.list(`${currUser?.uid}/profile_photo`);
-      console.log(existingFiles);
-      if (listError) {
-        console.error("Error listing existing files:", listError);
-      } else if (existingFiles?.length > 0) {
-        const filesToDelete = existingFiles.map(file => 
-          `${currUser?.uid}/profile_photo/${file.name}`
-        );
-        console.log("Files to be deleted ");
-        filesToDelete.forEach((e) => {console.log(e)})
+      console.log("THIS IS IMAGE PATH");
+      console.log(imagePath);
+      // Delete previous image if path exists
+      if (imagePath) {
+        console.log("Trying to delete the images");
         const { error: deleteError } = await supabase.storage
           .from("community-app-assets")
-          .remove(filesToDelete);
+          .remove([imagePath]);
 
         if (deleteError) {
-          console.error("Error deleting old files:", deleteError);
+          console.error("Error deleting old file:", deleteError);
         }
       }
-  
+
       const base64 = await FileSystem.readAsStringAsync(image.uri, {
         encoding: "base64",
       });
-  
-      const filePath = `${currUser?.uid}/profile_photo/${new Date().getTime()}.${
+
+      const newFilePath = `${currUser?.uid}/profile_photo/${new Date().getTime()}.${
         image?.type === "image" ? "png" : "mp4"
       }`;
       
       const contentType = image?.type === "image" ? "image/png" : "video/mp4";
       
-      console.log("Starting upload to Supabase...");
       const { data, error: uploadError } = await supabase.storage
         .from("community-app-assets")
-        .upload(filePath, decode(base64), { contentType });
-  
+        .upload(newFilePath, decode(base64), { contentType });
+
       if (uploadError) {
-        console.error("Upload error:", uploadError);
         throw new Error("Failed to upload image to storage");
       }
-  
-      console.log("Getting public URL...");
+
       const imagePublicURL = await supabase.storage
         .from("community-app-assets")
-        .getPublicUrl(filePath);
-  
+        .getPublicUrl(newFilePath);
+
       if (!imagePublicURL?.data?.publicUrl) {
         throw new Error("Failed to get public URL");
       }
-  
+
       const imgURL = imagePublicURL.data.publicUrl;
-      console.log("Got public URL:", imgURL);
-  
-      console.log("Updating Firestore...");
+
       const userRef = collection(db, "users");
       const q = query(userRef, where("userId", "==", currUser.uid));
       const querySnapshot = await getDocs(q);
-  
+
       if (querySnapshot.empty) {
         throw new Error("User document not found");
       }
-  
-      // Get the first matching document
+
       const userDoc = querySnapshot.docs[0];
       
-      // Update the document with new image URL
+      // Store both the URL and path
       await updateDoc(doc(db, "users", userDoc.id), {
-        profileImage: imgURL
+        profileImage: imgURL,
+        imagePath: newFilePath
       });
-      console.log("Successfully updated profile image");
+
+      setImagePath(newFilePath);
       return imgURL;
     } catch (error) {
       console.error("Error in updateImage:", error);
