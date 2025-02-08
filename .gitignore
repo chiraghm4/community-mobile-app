@@ -137,3 +137,5 @@ expo-env.d.ts
 
 # .expo folder
 .expo
+
+android/
