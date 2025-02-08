@@ -108,12 +108,14 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
+    borderRadius : 10,
   },
   descContainer: {
     padding: 5,
     flexDirection: "row",
     width: "100%",
     paddingTop: 10,
+    minHeight : 80,
   },
   description: {
     width: "80%",

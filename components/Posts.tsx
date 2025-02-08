@@ -198,6 +198,7 @@ import {
       width: '100%',
       height: '100%',
       resizeMode: 'cover',
+      borderRadius : 10,
     },
     description: {
       fontFamily: "manro-sb",
