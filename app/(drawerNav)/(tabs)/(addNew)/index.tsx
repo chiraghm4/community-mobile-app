@@ -19,7 +19,7 @@ import { pushSupabaseURL2Firebase } from "@/helpers/hSupabaseImageHandler";
 import RNPickerSelect from "react-native-picker-select";
 import { TextInput } from "react-native-gesture-handler";
 import { getAllCommunities } from "@/helpers/hSubscribeToComm";
-import StarRating from "react-native-star-rating-widget";
+// import StarRating from "react-native-star-rating-widget";
 import styles, { pickerSelectStyles } from "@/app/styles/addNewPageStyles";
 
 const AddNewPage = () => {
@@ -240,7 +240,7 @@ const AddNewPage = () => {
                   multiline
                   placeholderTextColor="#666"
                 />
-                <StarRating rating={rating} onChange={setRating} />
+                {/* <StarRating rating={rating} onChange={setRating} /> */}
               </>
             )}
 

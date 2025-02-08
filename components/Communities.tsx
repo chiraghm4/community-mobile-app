@@ -89,7 +89,7 @@ const CommunitiesComp = ({ CommunitiesInfo }: Props) => {
       <BlurView intensity={90} tint="light" style={styles.card}>
         <View style={styles.container}>
           <View style={styles.imageContainer}>
-            <Image source={{ uri: item.image }} style={styles.communityImage} />
+            <Image source={{ uri: item.image || "https://static.vecteezy.com/system/resources/previews/026/219/614/non_2x/community-icon-symbol-design-illustration-vector.jpg" }} style={styles.communityImage} />
           </View>
           <View style={styles.infoContainer}>
             <View style={styles.InfoUpper}>

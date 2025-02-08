@@ -13,12 +13,12 @@ import { collection, getDocs, onSnapshot, query, where } from 'firebase/firestor
 
 const CustomDrawerComponent = (props:any) => {
   const {top, bottom} = useSafeAreaInsets();
-  const [profileImage, setProfileImage] = useState("");
+  const [profileImage, setProfileImage] = useState("https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png");
   const [username, setUsername] = useState("");
   const auth = getAuth()
   const currUser = auth.currentUser
   const userRef = collection(db, "users");
-  const q = query(userRef, where("userId", "==", currUser.uid));
+  const q = query(userRef, where("userId", "==", currUser?.uid));
   useEffect(() => {
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       const updatedUsername = querySnapshot.docs[0]?.data()?.username;
@@ -35,7 +35,7 @@ const CustomDrawerComponent = (props:any) => {
         const auth = getAuth();
         const currUser = auth.currentUser;
         const userRef = collection(db, "users");
-        const q = query(userRef, where("userId", "==", currUser.uid));
+        const q = query(userRef, where("userId", "==", currUser?.uid));
         const querySnapshot = await getDocs(q);
         const userDoc = querySnapshot.docs[0];
         const profileUrl = userDoc.data().profileImage;

@@ -16,6 +16,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
 import { setPostAsFavourite } from "@/helpers/hSetFavouritePosts";
+import RecipeModal from "./RecipeModal";
 export interface RecipeInf {
   id: number;
   title: string;
@@ -32,6 +33,8 @@ interface Props {
 // const router = useRouter();
 
 const RecipeCard = ({ Recipes }: Props) => {
+  const [selectedRecipe, setSelectedRecipe] = useState<RecipeInf | null>(null);
+
   const postsRef = useRef<FlatList>(null);
 
   //Custom Seperator component
@@ -49,10 +52,10 @@ const RecipeCard = ({ Recipes }: Props) => {
       item.desc.length > maxLength
         ? `${item.desc.substring(0, maxLength)}...`
         : item.desc;
+    const hasImage = item.hasOwnProperty("imgURL") && item.imgURL.length > 0;
+
     return (
-      <TouchableOpacity
-      // onPress={() => router.push(`/Post/${item.id}`)}
-      >
+      <TouchableOpacity onPress={() => setSelectedRecipe(item)}>
         <Animated.View
           style={styles.row}
           entering={FadeInRight}
@@ -60,10 +63,10 @@ const RecipeCard = ({ Recipes }: Props) => {
         >
           <Text style={styles.titleTxt}>{item.title}</Text>
           <View style={styles.descContainer}>
-            <Text style={styles.description}>{item.desc}</Text>
-            {item.hasOwnProperty("imgURL") ? (
+            <Text style={styles.description}>{truncatedDescription}</Text>
+            {hasImage && (
               <Image source={{ uri: item?.imgURL }} style={styles.sideImg} />
-            ) : null}
+            )}
           </View>
         </Animated.View>
       </TouchableOpacity>
@@ -79,6 +82,12 @@ const RecipeCard = ({ Recipes }: Props) => {
         data={Recipes}
         keyExtractor={(item) => item.id.toString()}
         ItemSeparatorComponent={renderSeparator}
+      />
+
+      <RecipeModal
+        isVisible={!!selectedRecipe}
+        onClose={() => setSelectedRecipe(null)}
+        recipe={selectedRecipe || { title: "", desc: "", imgURL: "" }}
       />
     </View>
   );

@@ -1,6 +1,6 @@
 import { Alert, Image, Modal, Text, TouchableOpacity, View } from "react-native";
 // import RestaurantImg from "@/assets/images/restaurant_image.jpg";
-import { StarRatingDisplay } from "react-native-star-rating-widget";
+// import { StarRatingDisplay } from "react-native-star-rating-widget";
 import { styles } from "@/app/styles/restaurantCardStyles";
 import { useState } from "react";
 
@@ -29,11 +29,11 @@ export const RestaurantCard = ({ name, address, imageURL, rating }: Props) => {
           <Text style={styles.cardTitle} numberOfLines={2}>
             {name}
           </Text>
-          <StarRatingDisplay
+          {/* <StarRatingDisplay
             rating={rating}
             starSize={18}
             style={styles.ratingContainer}
-          />
+          /> */}
         </View>
       </TouchableOpacity>
 
@@ -54,7 +54,7 @@ export const RestaurantCard = ({ name, address, imageURL, rating }: Props) => {
               <Text style={styles.modalTitle}>{name}</Text>
 
               <View style={styles.ratingRow}>
-                <StarRatingDisplay rating={rating} starSize={20} />
+                {/* <StarRatingDisplay rating={rating} starSize={20} /> */}
                 <Text style={styles.ratingText}>{rating}/5</Text>
               </View>
 

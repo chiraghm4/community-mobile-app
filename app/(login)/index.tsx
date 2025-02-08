@@ -27,7 +27,7 @@ const LoginPage = () => {
   const signIn = async (email: string, password: string) => {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
-      if (user) router.replace("/(tabs)");
+      if (user) router.replace("/(drawerNav)/(tabs)/(posts)");
     } catch (error: any) {
       console.log(error);
       alert(error.message);
@@ -46,7 +46,7 @@ const LoginPage = () => {
         communities: [],
       });
 
-      if (user) router.replace("/(tabs)");
+      if (user) router.replace("/(drawerNav)/(tabs)/(posts)");
 
       console.log(AsyncStorage.getAllKeys());
     } catch (error: any) {
