@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   Button,
+  Image,
   Modal,
   Pressable,
   SafeAreaView,
@@ -20,6 +21,7 @@ import RNPickerSelect from "react-native-picker-select";
 import { TextInput } from "react-native-gesture-handler";
 import { getAllCommunities } from "@/helpers/hSubscribeToComm";
 // import StarRating from "react-native-star-rating-widget";
+import { RatingInput } from "react-native-stock-star-rating";
 import styles, { pickerSelectStyles } from "@/app/styles/addNewPageStyles";
 
 const AddNewPage = () => {
@@ -241,6 +243,13 @@ const AddNewPage = () => {
                   placeholderTextColor="#666"
                 />
                 {/* <StarRating rating={rating} onChange={setRating} /> */}
+                <RatingInput
+                  rating={rating}
+                  setRating={setRating}
+                  size={50}
+                  maxStars={5}
+                  bordered={false}
+                />
               </>
             )}
 
@@ -272,7 +281,23 @@ const AddNewPage = () => {
               >
                 <Text style={styles.uploadButtonText}>Upload Image</Text>
               </TouchableOpacity>
+              
             )}
+            {image && (
+                <View style={styles.previewContainer}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={styles.preview}
+                    resizeMode="cover"
+                  />
+                  <TouchableOpacity 
+                    style={styles.removeButton}
+                    onPress={() => setImage(null)}
+                  >
+                    <Text style={styles.removeButtonText}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
           </View>
 
           <TouchableOpacity

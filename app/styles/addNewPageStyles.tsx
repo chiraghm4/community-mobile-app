@@ -74,6 +74,27 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+  previewContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  preview: {
+    width: 300,
+    height: 225,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  removeButton: {
+    backgroundColor: '#FF3B30',
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 5,
+  },
+  removeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+  }
 });
 
 export const pickerSelectStyles = StyleSheet.create({

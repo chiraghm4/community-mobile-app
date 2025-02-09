@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "clean-app",
+    "name": "healthify",
     "slug": "clean-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/mental-health.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.chiragbuilds.cleanapp"
+      "package": "com.chiragbuilds.healthify"
     },
     "web": {
       "bundler": "metro",

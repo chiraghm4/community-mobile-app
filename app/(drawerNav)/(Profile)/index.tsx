@@ -26,7 +26,7 @@ const ProfilePage = () => {
         const auth = getAuth();
         const currUser = auth.currentUser;
         const userRef = collection(db, "users");
-        const q = query(userRef, where("userId", "==", currUser.uid));
+        const q = query(userRef, where("userId", "==", currUser?.uid));
         const querySnapshot = await getDocs(q);
         const userDoc = querySnapshot.docs[0];
         const profileUrl = userDoc.data().profileImage;
@@ -177,7 +177,7 @@ const ProfilePage = () => {
       const newFilePath = `${currUser?.uid}/profile_photo/${new Date().getTime()}.${
         image?.type === "image" ? "png" : "mp4"
       }`;
-      
+      // console.log(newFilePath, "new path")
       const contentType = image?.type === "image" ? "image/png" : "video/mp4";
       
       const { data, error: uploadError } = await supabase.storage

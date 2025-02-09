@@ -56,7 +56,7 @@ const RestaurantsPage = () => {
             name={item.restaurantName}
             address={item.address}
             imageURL={item.imgURL}
-            rating={3}
+            rating={item.rating}
           />
         )}
         contentContainerStyle={styles.listContainer}

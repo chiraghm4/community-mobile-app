@@ -87,6 +87,8 @@ export const styles = StyleSheet.create({
   },
   cardContent: {
     padding: 12,
+    alignContent: "center",
+    alignItems: "center"
   },
   cardTitle: {
     fontSize: 14,
